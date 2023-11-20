@@ -1,7 +1,7 @@
-#ifndef CSERVER_TOOL_NONCOPYABLE_
-#define CSERVER_TOOL_NONCOPYABLE_
+#ifndef CSERVER_TOOL_INCLUDE_NONCOPYABLE_
+#define CSERVER_TOOL_INCLUDE_NONCOPYABLE_
 
-namespace cserver {
+namespace cServer {
 
 // 禁止拷贝构造和拷贝赋值，禁止用户创建该类，允许派生类创建。
 class noncopyable {
@@ -14,6 +14,6 @@ class noncopyable {
   ~noncopyable() = default;
 };
 
-} // namespace cserver
+} // namespace cServer
 
-#endif  // CSERVER_TOOL_NONCOPYABLE_
+#endif  // CSERVER_TOOL_INCLUDE_NONCOPYABLE_

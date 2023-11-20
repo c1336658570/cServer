@@ -59,6 +59,10 @@
   "files.associations": {
     "*.ld": "c",
     "log.h": "c",
-    "fstream": "cpp"
+    "fstream": "cpp",
+    "iosfwd": "cpp",
+    "tuple": "cpp",
+    "string": "cpp",
+    "limits": "cpp"
   }
 }
