@@ -173,10 +173,25 @@ LogStream &LogStream::operator<<(const Buffer &v)
   return *this;
 }
 
+} // namespace cServer
+
 template<typename T>
-Fmt::Fmt(const char *fmt, T val) {
+cServer::Fmt::Fmt(const char *fmt, T val) {
+  // 使用 snprintf 将格式化后的字符串写入 buf_ 中，并获取字符串的长度
   length_ = snprintf(buf_, sizeof(buf_), fmt, val);
+  // 使用断言确保格式化后的字符串长度未超出 buf_ 的大小
   assert(static_cast<size_t>(length_) < sizeof(buf_));
 }
 
-} // namespace cServer
+// 显式实例化模板
+template cServer::Fmt::Fmt(const char* fmt, char);
+template cServer::Fmt::Fmt(const char* fmt, short);
+template cServer::Fmt::Fmt(const char* fmt, unsigned short);
+template cServer::Fmt::Fmt(const char* fmt, int);
+template cServer::Fmt::Fmt(const char* fmt, unsigned int);
+template cServer::Fmt::Fmt(const char* fmt, long);
+template cServer::Fmt::Fmt(const char* fmt, unsigned long);
+template cServer::Fmt::Fmt(const char* fmt, long long);
+template cServer::Fmt::Fmt(const char* fmt, unsigned long long);
+template cServer::Fmt::Fmt(const char* fmt, float);
+template cServer::Fmt::Fmt(const char* fmt, double);

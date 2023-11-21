@@ -29,7 +29,7 @@ class FixedBuffer : noncopyable {
   }
 
   // 获取缓冲区数据的起始位置
-  const char *data() {
+  const char *data() const {
     return data_;
   }
 
@@ -78,16 +78,19 @@ class FixedBuffer : noncopyable {
 
 
  private:
-  const char *end() const { return data_ + sizeof(data_); }
+  // 返回缓冲区尾后位置
+  const char *end() const {
+    return data_ + sizeof(data_);
+  }
 
   char data_[SIZE];     // 缓冲区数组
   char *cur_;           // 当前指针位置
 };
 
 class LogStream : noncopyable {
-  typedef LogStream self;
+  typedef LogStream self;   // 类型别名，self 表示 LogStream 类自身
  public:
-  typedef FixedBuffer<kSmallBuffer> Buffer;
+  typedef FixedBuffer<kSmallBuffer> Buffer;   // 类型别名，Buffer 表示 LogStream 使用的固定大小缓冲区
 
   // 重载<<运算符，实现通过<<运算符向Buffer_写数据
   self& operator<<(bool);
@@ -109,14 +112,17 @@ class LogStream : noncopyable {
   self& operator<<(const pcrecpp::StringPiece &);
   self& operator<<(const Buffer &);
 
+  // 在 buffer_ 中追加指定长度的字符数据
   void append(const char *data, int len) {
     buffer_.append(data, len);
   }
 
+  // 返回 LogStream 使用的缓冲区
   const Buffer &buffer() const{
     return buffer_;
   }
 
+  // 重置缓冲区
   void resetBuffer() {
     buffer_.reset();
   }
@@ -132,12 +138,16 @@ class LogStream : noncopyable {
 
 class Fmt {
  public:
+  // 构造函数，接受格式字符串和值，用于格式化输出
   template <typename T>
   Fmt(const char *fmt, T val);
 
+  // 返回格式化后的字符串的首地址
   const char *data() const {
     return buf_;
   }
+
+  // 返回格式化后的字符串的长度
   int length() const {
     return length_;
   }
@@ -147,6 +157,7 @@ class Fmt {
   int length_;
 };
 
+// 重载<<运算符，将 Fmt 对象中的格式化字符串追加到 LogStream 缓冲区中
 inline LogStream &operator<<(LogStream &s, const Fmt &fmt) {
   s.append(fmt.data(), fmt.length());
   return s;
