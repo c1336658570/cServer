@@ -9,7 +9,7 @@ const char digits[] = "9876543210123456789";
 const char* zero = digits + 9;
 const char digitsHex[] = "0123456789ABCDEF";
 
-// 将整数转为字符数组
+// 将整数转为字符写入buf中
 template <typename T>
 size_t convert(char buf[], T value) {
   T i = value;
@@ -30,7 +30,7 @@ size_t convert(char buf[], T value) {
   return p - buf;   // 返回转换后的字符串的长度
 }
 
-// 将16进制数转为字符数组
+// 将16进制数转为字符写入buf中
 size_t converHex(char buf[], uintptr_t value) {
   uintptr_t i = value;  // 无符号整数
   char *p = buf;
@@ -63,52 +63,52 @@ void LogStream::formatInteger(T v) {
   }
 }
 
-LogStream &LogStream::operator<<(bool b) {
+LogStream& LogStream::operator<<(bool b) {
   buffer_.append(b ? "1" : "0", 1);
   return *this;
 }
 
-LogStream &LogStream::operator<<(short v) {
+LogStream& LogStream::operator<<(short v) {
   *this << static_cast<int>(v);
   return *this;
 }
 
-LogStream &LogStream::operator<<(unsigned short v) {
+LogStream& LogStream::operator<<(unsigned short v) {
   *this << static_cast<unsigned int>(v);
   return *this;
 }
 
-LogStream &LogStream::operator<<(int v) {
+LogStream& LogStream::operator<<(int v) {
   formatInteger(v);
   return *this;
 }
 
-LogStream &LogStream::operator<<(unsigned int v) {
+LogStream& LogStream::operator<<(unsigned int v) {
   formatInteger(v);
   return *this;
 }
 
-LogStream &LogStream::operator<<(long v) {
+LogStream& LogStream::operator<<(long v) {
   formatInteger(v);
   return *this;
 }
 
-LogStream &LogStream::operator<<(unsigned long v) {
+LogStream& LogStream::operator<<(unsigned long v) {
   formatInteger(v);
   return *this;
 }
 
-LogStream &LogStream::operator<<(long long v) {
+LogStream& LogStream::operator<<(long long v) {
   formatInteger(v);
   return *this;
 }
 
-LogStream &LogStream::operator<<(unsigned long long v) {
+LogStream& LogStream::operator<<(unsigned long long v) {
   formatInteger(v);
   return *this;
 }
 
-LogStream &LogStream::operator<<(const void* p) 
+LogStream& LogStream::operator<<(const void* p) 
 {
   auto v = reinterpret_cast<uintptr_t>(p);    // 将指针 p 转换为无符号整数
   if(buffer_.avail() >= kMaxNumericSize){     // 检查缓冲区是否有足够空间
@@ -122,12 +122,12 @@ LogStream &LogStream::operator<<(const void* p)
   return *this;
 }
 
-LogStream &LogStream::operator<<(float b) {
+LogStream& LogStream::operator<<(float b) {
   *this <<static_cast<double>(b);
   return *this;
 }
 
-LogStream &LogStream::operator<<(double v) {
+LogStream& LogStream::operator<<(double v) {
   if(buffer_.avail() >= kMaxNumericSize){
     int len = snprintf(buffer_.current(), kMaxNumericSize, "%.12g", v);
     buffer_.add(len);
@@ -135,12 +135,12 @@ LogStream &LogStream::operator<<(double v) {
   return *this;
 }
 
-LogStream &LogStream::operator<<(char b) {
+LogStream& LogStream::operator<<(char b) {
   buffer_.append(&b, 1);
   return *this;
 }
 
-LogStream &LogStream::operator<<(const char *b) 
+LogStream& LogStream::operator<<(const char *b) 
 {
   if(b){
     buffer_.append(b, strlen(b));
@@ -151,23 +151,23 @@ LogStream &LogStream::operator<<(const char *b)
   return *this;
 }
 
-LogStream &LogStream::operator<<(const unsigned char *str) {
+LogStream& LogStream::operator<<(const unsigned char *str) {
   return operator<<(reinterpret_cast<const char *>(str));
 }
 
-LogStream &LogStream::operator<<(const std::string &b) 
+LogStream& LogStream::operator<<(const std::string& b) 
 {
   buffer_.append(b.c_str(), b.size());
   return *this;
 }
 
-LogStream &LogStream::operator<<(const pcrecpp::StringPiece &v)
+LogStream& LogStream::operator<<(const pcrecpp::StringPiece& v)
 {
   buffer_.append(v.data(), v.size());
   return *this;
 }
 
-LogStream &LogStream::operator<<(const Buffer &v)
+LogStream& LogStream::operator<<(const Buffer& v)
 {
   *this << v.toStringPiece();
   return *this;

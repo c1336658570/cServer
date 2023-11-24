@@ -121,6 +121,8 @@ inline Logger::LogLevel Logger::logLevel()
 // LOG_SYSFATAL 宏，记录 FATAL 级别的日志，中止程序
 #define LOG_SYSFATAL cServer::Logger(__FILE__, __LINE__, true).stream()
 
+const char* strerror_tl(int savedErrno);
+
 } // namespace cServer
 
 #endif  // CSERVER_LOG_INCLUDE_LOGGING_

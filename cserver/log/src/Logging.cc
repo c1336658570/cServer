@@ -133,7 +133,7 @@ Logger::Logger(SourceFile file, int line, bool toAbort)
 // 析构函数，完成日志消息并输出到指定设备，如果级别为FATAL，则刷新缓冲区并终止程序
 Logger::~Logger() {
   impl_.finish();   // 完成日志消息
-  const LogStream::Buffer &buf(stream().buffer());
+  const LogStream::Buffer& buf(stream().buffer());
   g_output(buf.data(), buf.length());   // 输出日志消息
   if (impl_.level_ == FATAL)
   {
@@ -157,4 +157,4 @@ void Logger::setFlush(FlushFunc flush) {
   g_flush = flush;
 }
 
-}
+} // namespace cServer

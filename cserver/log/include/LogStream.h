@@ -108,9 +108,9 @@ class LogStream : noncopyable {
   self& operator<<(char);
   self& operator<<(const char *);
   self& operator<<(const unsigned char *);
-  self& operator<<(const std::string &);
-  self& operator<<(const pcrecpp::StringPiece &);
-  self& operator<<(const Buffer &);
+  self& operator<<(const std::string&);
+  self& operator<<(const pcrecpp::StringPiece&);
+  self& operator<<(const Buffer&);
 
   // 在 buffer_ 中追加指定长度的字符数据
   void append(const char *data, int len) {
@@ -118,7 +118,7 @@ class LogStream : noncopyable {
   }
 
   // 返回 LogStream 使用的缓冲区
-  const Buffer &buffer() const{
+  const Buffer& buffer() const{
     return buffer_;
   }
 
@@ -158,7 +158,7 @@ class Fmt {
 };
 
 // 重载<<运算符，将 Fmt 对象中的格式化字符串追加到 LogStream 缓冲区中
-inline LogStream &operator<<(LogStream &s, const Fmt &fmt) {
+inline LogStream &operator<<(LogStream& s, const Fmt& fmt) {
   s.append(fmt.data(), fmt.length());
   return s;
 }

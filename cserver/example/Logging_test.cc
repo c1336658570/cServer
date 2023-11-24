@@ -1,3 +1,4 @@
+// g++ Logging_test.cc ../log/src/* ../tool/src/* -I ../log/include -I ../tool/include -g
 #include "Logging.h"
 #include "LogStream.h"
 
