@@ -53,8 +53,8 @@ class MutexLockGuard : noncopyable {
 // 这个宏的作用是防止程序里出现如下错误：
 /*
 void doit() {
-  muduo::MutexLock mutex;
-  muduo::MutexLockGuard(mutex);  //
+  cServer::MutexLock mutex;
+  cServer::MutexLockGuard(mutex);  //
 遗漏变量名，产生一个临时对象又马上销毁了，结果没锁住临界区
   // 正确写法是 MutexLockGuard lock(mutex)
 }
