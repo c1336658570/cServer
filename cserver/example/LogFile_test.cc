@@ -1,4 +1,4 @@
-// g++ LogFile_test.cc ../log/src/* ../tool/src/*  -I../log/include/ -I../tool/include
+// g++ LogFile_test.cc ../log/src/* ../tool/src/* -I../log/include/ -I../tool/include
 #include "LogFile.h"
 #include "Logging.h"
 
@@ -6,7 +6,7 @@
 
 std::unique_ptr<cServer::LogFile> g_logFile;
 
-void outputFunc(const char* msg, int len)
+void outputFunc(const char *msg, int len)
 {
   g_logFile->append(msg, len);
 }
@@ -16,7 +16,7 @@ void flushFunc()
   g_logFile->flush();
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
   char name[256] = { '\0' };
   strncpy(name, argv[0], sizeof(name - 1));

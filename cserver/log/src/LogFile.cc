@@ -4,7 +4,7 @@
 namespace cServer {
 
 // 构造函数，初始化 LogFile 对象
-LogFile::LogFile(const std::string& basename, off_t rollSize, bool threadSafe,
+LogFile::LogFile(const std::string &basename, off_t rollSize, bool threadSafe,
     int flushInterval, int checkEveryN) :
     basename_(basename),
     rollSize_(rollSize),
@@ -23,7 +23,7 @@ LogFile::LogFile(const std::string& basename, off_t rollSize, bool threadSafe,
 LogFile::~LogFile() = default;
 
 // 在加锁或者不加锁的情况下追加日志内容到文件
-void LogFile::append(const char* logline, int len) {
+void LogFile::append(const char *logline, int len) {
   if (mutex_) {
     MutexLockGuard lock(*mutex_);
     append_unlocked(logline, len);
@@ -43,7 +43,7 @@ void LogFile::flush() {
 }
 
 // 在加锁或者不加锁的情况下追加日志内容到文件，并根据条件执行滚动操作
-void LogFile::append_unlocked(const char* logline, int len) {
+void LogFile::append_unlocked(const char *logline, int len) {
   file_->append(logline, len);
 
   if (file_->writtenBytes() > rollSize_) {  // 如果已写入字节数超过滚动大小
@@ -81,7 +81,7 @@ bool LogFile::rollFile() {
 }
 
 // 获取日志文件名，文件名包含基本名称、时间戳、主机名和进程ID和.log。
-std::string LogFile::getLogFileName(const std::string& basename, time_t* now) {
+std::string LogFile::getLogFileName(const std::string &basename, time_t *now) {
   std::string filename;
   filename.reserve(basename.size() + 64);
   filename = basename;

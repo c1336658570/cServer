@@ -15,7 +15,7 @@ class AppendFile : noncopyable {
   ~AppendFile();
 
   // 将logline指向的内容追加到缓冲区（flush后会进入文件）
-  void append(const char* logline, size_t len);
+  void append(const char *logline, size_t len);
 
   // 刷新文件流
   void flush();
@@ -29,7 +29,7 @@ class AppendFile : noncopyable {
  // 实际执行写操作的函数，返回写入的字节数
   size_t write(const char* logline, size_t len);
 
-  FILE* fp_;                  // 文件指针，用于操作文件流
+  FILE *fp_;                  // 文件指针，用于操作文件流
   char buffer_[64 * 1024];    // 文件输出缓冲区，用于缓存写入的数据
   off_t writtenBytes_;        // 已写入的字节数
 };

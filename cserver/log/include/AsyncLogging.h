@@ -14,7 +14,7 @@ namespace cServer {
 class AsyncLogging : noncopyable {
  public:
   // 构造函数，参数为日志文件的基本名称、滚动大小和刷新间隔（默认为3秒）
-  AsyncLogging(const string& basename, off_t rollSize, int flushInterval = 3);
+  AsyncLogging(const std::string &basename, off_t rollSize, int flushInterval = 3);
   // 析构函数，如果后台线程正在运行，则停止它
   ~AsyncLogging() {
     if (running_) {
@@ -23,7 +23,7 @@ class AsyncLogging : noncopyable {
   }
 
   // 添加日志消息到待写入的缓冲区
-  void append(const char* logline, int len);
+  void append(const char *logline, int len);
 
   // 启动异步日志线程
   void start() {
@@ -52,7 +52,7 @@ class AsyncLogging : noncopyable {
 
   const int flushInterval_;        // 刷新间隔，单位秒
   std::atomic<bool> running_;      // 表示异步日志线程是否在运行
-  const string basename_;          // 日志文件的基本名称
+  const std::string basename_;          // 日志文件的基本名称
   const off_t rollSize_;           // 日志文件滚动大小
   cServer::Thread thread_;         // 后台线程对象
   cServer::CountDownLatch latch_;  // 用于等待后台线程启动完成

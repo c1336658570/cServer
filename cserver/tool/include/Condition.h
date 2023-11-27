@@ -12,7 +12,7 @@ namespace cServer {
 class Condition : noncopyable {
  public:
   // 构造函数，需要传入一个互斥锁对象
-  explicit Condition(MutexLock& mutex) : mutex_(mutex) {
+  explicit Condition(MutexLock &mutex) : mutex_(mutex) {
     // 初始化条件变量
     pthread_cond_init(&pcond_, NULL);
   }
@@ -34,7 +34,7 @@ class Condition : noncopyable {
   void notifyAll();
 
  private:
-  MutexLock& mutex_;        // 引用互斥锁对象，用于与条件变量一起使用
+  MutexLock &mutex_;        // 引用互斥锁对象，用于与条件变量一起使用
   pthread_cond_t pcond_;    // 条件变量对象
 };
 

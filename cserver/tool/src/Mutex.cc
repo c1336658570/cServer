@@ -34,7 +34,7 @@ void MutexLock::unlock() {   // 仅供MutexLockGuard调用，严禁用户代码�
   pthread_mutex_unlock(&mutex_);
 }
 
-pthread_mutex_t* MutexLock::getPthreadMutex() { /* non-const */  // 仅供MutexLockGuard调用，严禁用户代码调用
+pthread_mutex_t *MutexLock::getPthreadMutex() { /* non-const */  // 仅供MutexLockGuard调用，严禁用户代码调用
   return &mutex_;
 }
 

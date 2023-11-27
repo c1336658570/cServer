@@ -33,7 +33,7 @@ class Logger {
     }
 
     // 返回不带路径的文件名
-    const char* data() const {
+    const char *data() const {
       return data_;
     }
 
@@ -64,14 +64,14 @@ class Logger {
   Logger(SourceFile file, int line, bool toAbort);
   ~Logger();
 
-  LogStream& stream() {
+  LogStream &stream() {
     return impl_.stream_;
   }
 
   static LogLevel logLevel();               // 获取日志等级
   static void setLogLevel(LogLevel level);  // 设置日志等级
 
-  typedef void (*OutputFunc)(const char* msg, int len);
+  typedef void (*OutputFunc)(const char *msg, int len);
   typedef void (*FlushFunc)();
   static void setOutput(OutputFunc);        // 设置输出刷新函数
   static void setFlush(FlushFunc);          // 设置刷新函数
@@ -81,7 +81,7 @@ class Logger {
    public:
     typedef Logger::LogLevel LogLevel;
     // 构造函数，接受日志等级、错误号、源文件、行号
-    Impl(LogLevel level, int old_errno, const SourceFile& file, int line);
+    Impl(LogLevel level, int old_errno, const SourceFile &file, int line);
     // 格式化时间
     void formatTime();
     void finish();            // 一条日志的结束
@@ -121,7 +121,7 @@ inline Logger::LogLevel Logger::logLevel()
 // LOG_SYSFATAL 宏，记录 FATAL 级别的日志，中止程序
 #define LOG_SYSFATAL cServer::Logger(__FILE__, __LINE__, true).stream()
 
-const char* strerror_tl(int savedErrno);
+const char *strerror_tl(int savedErrno);
 
 } // namespace cServer
 

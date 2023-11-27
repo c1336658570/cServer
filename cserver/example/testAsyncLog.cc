@@ -10,11 +10,11 @@
 int ROLL_SIZE = 500 * 1000 * 1000;
 std::unique_ptr<cServer::AsyncLogging> logging;
 
-void asyncOut(const char* msg, int len) {
+void asyncOut(const char *msg, int len) {
   logging->append(msg, len);
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   logging = std::make_unique<cServer::AsyncLogging>(::basename(argv[0]), ROLL_SIZE);
   logging->start();
 

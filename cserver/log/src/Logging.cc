@@ -34,7 +34,7 @@ Logger::LogLevel initLogLevel()
 Logger::LogLevel g_logLevel = initLogLevel();
 
 // 定义日志级别对应的字符串数组，用于在日志输出中标识日志级别。
-const char* LogLevelName[Logger::NUM_LOG_LEVELS] = {
+const char *LogLevelName[Logger::NUM_LOG_LEVELS] = {
   "TRACE ",
   "DEBUG ",
   "INFO  ",
@@ -74,7 +74,7 @@ void Logger::Impl::formatTime() {
   stream_.append(us.data(), 9); // 附加微秒数
 }
 
-Logger::Impl::Impl(LogLevel level, int old_errno, const SourceFile& file, int line)
+Logger::Impl::Impl(LogLevel level, int old_errno, const SourceFile &file, int line)
   : time_(Timestamp::now()),    // 获取当前时间戳
     stream_(),                  // 初始化日志流
     level_(level),              // 设置日志级别
@@ -115,7 +115,7 @@ Logger::Logger(SourceFile file, int line)
 }
 
 // 构造函数，初始化日志实现类，设置日志级别为指定级别，附带函数名信息
-Logger::Logger(SourceFile file, int line, LogLevel level, const char* func) 
+Logger::Logger(SourceFile file, int line, LogLevel level, const char *func) 
   : impl_(level, 0, file, line) {
   impl_.stream_ << func << ' ';
 }
@@ -133,7 +133,7 @@ Logger::Logger(SourceFile file, int line, bool toAbort)
 // 析构函数，完成日志消息并输出到指定设备，如果级别为FATAL，则刷新缓冲区并终止程序
 Logger::~Logger() {
   impl_.finish();   // 完成日志消息
-  const LogStream::Buffer& buf(stream().buffer());
+  const LogStream::Buffer &buf(stream().buffer());
   g_output(buf.data(), buf.length());   // 输出日志消息
   if (impl_.level_ == FATAL)
   {

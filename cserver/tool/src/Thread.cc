@@ -7,10 +7,10 @@ namespace cServer {
 struct ThreadData {
   typedef cServer::Thread::ThreadFunc ThreadFunc;
   ThreadFunc func_;       // 要由线程执行的函数
-  pid_t* tid_;            // 用于存储线程ID的指针
-  CountDownLatch* latch_; // 用于同步的CountDownLatch指针
+  pid_t *tid_;            // 用于存储线程ID的指针
+  CountDownLatch *latch_; // 用于同步的CountDownLatch指针
 
-  ThreadData(ThreadFunc func, pid_t* tid, CountDownLatch* latch) :
+  ThreadData(ThreadFunc func, pid_t *tid, CountDownLatch *latch) :
   func_(std::move(func)), tid_(tid), latch_(latch) {}
 
   void runInThread() {
@@ -23,8 +23,8 @@ struct ThreadData {
 };
 
 // 由pthread_create调用的启动线程的函数
-void* startThread(void* obj) {
-  ThreadData* data = static_cast<ThreadData*>(obj);
+void *startThread(void *obj) {
+  ThreadData* data = static_cast<ThreadData *>(obj);
   data->runInThread();      // 执行线程函数
   delete data;              // 释放为ThreadData分配的内存
   return NULL;
@@ -53,7 +53,7 @@ void Thread::start() {
   assert(!started_);
   started_ = true;      // 标记线程已启动
   // 创建ThreadData结构并启动线程
-  ThreadData* data = new ThreadData(func_, &tid_, &latch_);
+  ThreadData *data = new ThreadData(func_, &tid_, &latch_);
   if (pthread_create(&pthreadId_, NULL, &startThread, data)) {
     started_ = false;   // 在失败的情况下标记线程为未启动
     delete data;        // 释放为ThreadData分配的内存

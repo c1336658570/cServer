@@ -18,7 +18,7 @@ AppendFile::~AppendFile() {
 }
 
 // 将 logline 指向的内容追加到文件中，len 表示内容的长度
-void AppendFile::append(const char* logline, const size_t len) {
+void AppendFile::append(const char *logline, const size_t len) {
   size_t written = 0;
 
   // 循环直到所有内容都被写入
@@ -44,7 +44,7 @@ void AppendFile::flush() {
 }
 
 // 实际执行写操作的私有函数，返回写入的字节数
-size_t AppendFile::write(const char* logline, size_t len) {
+size_t AppendFile::write(const char *logline, size_t len) {
   return ::fwrite_unlocked(logline, 1, len, fp_);   // 使用无锁版本的 fwrite 函数进行写入
 }
 

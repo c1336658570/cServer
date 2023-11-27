@@ -13,7 +13,7 @@ class LogFile : noncopyable
 {
  public:
   // 构造函数，参数包括日志文件的基本名称、滚动大小、是否线程安全、刷新间隔和检查频率
-  LogFile(const std::string& basename,
+  LogFile(const std::string &basename,
           off_t rollSize,
           bool threadSafe = true,
           int flushInterval = 3,
@@ -22,7 +22,7 @@ class LogFile : noncopyable
   ~LogFile();
 
   // 追加日志消息到日志文件
-  void append(const char* logline, int len);
+  void append(const char *logline, int len);
   // 刷新日志文件
   void flush();
   // 滚动日志文件
@@ -30,10 +30,10 @@ class LogFile : noncopyable
 
  private:
   // 无锁版本的追加日志消息到日志文件
-  void append_unlocked(const char* logline, int len);
+  void append_unlocked(const char *logline, int len);
 
   // 获取日志文件的名称，参数包括基本名称和当前时间
-  static std::string getLogFileName(const std::string& basename, time_t* now);
+  static std::string getLogFileName(const std::string &basename, time_t *now);
 
   const std::string basename_;    // 日志文件的基本名称，默认保存在当前工作目录下
   const off_t rollSize_;          // 日志文件的滚动大小，日志文件超过设定值进行roll

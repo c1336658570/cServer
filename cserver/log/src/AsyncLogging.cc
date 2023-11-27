@@ -4,7 +4,7 @@
 #include "Timestamp.h"
 
 namespace cServer {
-AsyncLogging::AsyncLogging(const string& basename, off_t rollSize, int flushInterval)
+AsyncLogging::AsyncLogging(const string &basename, off_t rollSize, int flushInterval)
     : flushInterval_(flushInterval),
       running_(false),
       basename_(basename),
@@ -22,7 +22,7 @@ AsyncLogging::AsyncLogging(const string& basename, off_t rollSize, int flushInte
 }
 
 // 前端在生成一条日志消息的时候会调用AsyncLogging::append()。
-void AsyncLogging::append(const char* logline, int len) {
+void AsyncLogging::append(const char *logline, int len) {
   cServer::MutexLockGuard lock(mutex_);  // 使用互斥锁保护对共享数据的访问
 
   // 检查当前缓冲区是否有足够的空间容纳日志消息
@@ -97,7 +97,7 @@ void AsyncLogging::threadFunc() {
       buffersToWrite.erase(buffersToWrite.begin() + 2, buffersToWrite.end());
     }
 
-    for (const auto& buffer : buffersToWrite) {
+    for (const auto &buffer : buffersToWrite) {
       // 将待写入文件的缓冲区内容追加到日志文件
       // FIXME: use unbuffered stdio FILE ? or use ::writev ?
       output.append(buffer->data(), buffer->length());

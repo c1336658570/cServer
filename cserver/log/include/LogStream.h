@@ -93,24 +93,24 @@ class LogStream : noncopyable {
   typedef FixedBuffer<kSmallBuffer> Buffer;   // 类型别名，Buffer 表示 LogStream 使用的固定大小缓冲区
 
   // 重载<<运算符，实现通过<<运算符向Buffer_写数据
-  self& operator<<(bool);
-  self& operator<<(short);
-  self& operator<<(unsigned short);
-  self& operator<<(int);
-  self& operator<<(unsigned int);
-  self& operator<<(long);
-  self& operator<<(unsigned long);
-  self& operator<<(long long);
-  self& operator<<(unsigned long long);
-  self& operator<<(const void *);
-  self& operator<<(float);
-  self& operator<<(double);
-  self& operator<<(char);
-  self& operator<<(const char *);
-  self& operator<<(const unsigned char *);
-  self& operator<<(const std::string&);
-  self& operator<<(const pcrecpp::StringPiece&);
-  self& operator<<(const Buffer&);
+  self &operator<<(bool);
+  self &operator<<(short);
+  self &operator<<(unsigned short);
+  self &operator<<(int);
+  self &operator<<(unsigned int);
+  self &operator<<(long);
+  self &operator<<(unsigned long);
+  self &operator<<(long long);
+  self &operator<<(unsigned long long);
+  self &operator<<(const void *);
+  self &operator<<(float);
+  self &operator<<(double);
+  self &operator<<(char);
+  self &operator<<(const char *);
+  self &operator<<(const unsigned char *);
+  self &operator<<(const std::string&);
+  self &operator<<(const pcrecpp::StringPiece&);
+  self &operator<<(const Buffer&);
 
   // 在 buffer_ 中追加指定长度的字符数据
   void append(const char *data, int len) {
@@ -118,7 +118,7 @@ class LogStream : noncopyable {
   }
 
   // 返回 LogStream 使用的缓冲区
-  const Buffer& buffer() const{
+  const Buffer &buffer() const{
     return buffer_;
   }
 
@@ -158,7 +158,7 @@ class Fmt {
 };
 
 // 重载<<运算符，将 Fmt 对象中的格式化字符串追加到 LogStream 缓冲区中
-inline LogStream &operator<<(LogStream& s, const Fmt& fmt) {
+inline LogStream &operator<<(LogStream &s, const Fmt &fmt) {
   s.append(fmt.data(), fmt.length());
   return s;
 }

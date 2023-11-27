@@ -21,7 +21,7 @@ inline int tid() {
 }
 
 // 获取缓存的线程ID的字符串表示的函数
-inline const char* tidString() {
+inline const char *tidString() {
   return t_tidString;
 }
 

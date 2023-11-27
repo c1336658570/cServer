@@ -23,7 +23,7 @@ class MutexLock : noncopyable {
 
   void unlock();
 
-  pthread_mutex_t* getPthreadMutex();
+  pthread_mutex_t *getPthreadMutex();
 
  private:
   pthread_mutex_t mutex_;
@@ -32,7 +32,7 @@ class MutexLock : noncopyable {
 
 class MutexLockGuard : noncopyable {
  public:
-  explicit MutexLockGuard(MutexLock& mutex) : mutex_(mutex) {
+  explicit MutexLockGuard(MutexLock &mutex) : mutex_(mutex) {
     mutex_.lock();
   }
 
@@ -41,7 +41,7 @@ class MutexLockGuard : noncopyable {
   }
 
  private:
-  MutexLock& mutex_;
+  MutexLock &mutex_;
 };
 
 }  // namespace cServer
