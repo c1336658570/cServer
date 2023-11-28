@@ -8,8 +8,8 @@ namespace cServer {
 std::string Timestamp::toString() const {
   char buf[32] = {0};
   // 将微秒数转换为秒数和微秒数
-  auto seconds = static_cast<time_t>(microsecondsSinceEpoch_ / MicrosecondsPerSecond);
-  int64_t microseconds = static_cast<int>(microsecondsSinceEpoch_ % MicrosecondsPerSecond);
+  auto seconds = static_cast<time_t>(microsecondsSinceEpoch_ / kMicroSecondsPerSecond);
+  int64_t microseconds = static_cast<int>(microsecondsSinceEpoch_ % kMicroSecondsPerSecond);
   // 格式化输出秒数和微秒数
   // "%" PRId64 ".%06" PRId64 "" 是格式化字符串，包含了两个占位符。PRId64 是表示带符号 64 位整数的宏。
   snprintf(buf, sizeof(buf) - 1, "%" PRId64 ".%06" PRId64 "", seconds, microseconds);
@@ -20,8 +20,8 @@ std::string Timestamp::toString() const {
 std::string Timestamp::toFormatString() const {
   char buf[32] = {0};
   // 将微秒数转换为秒数和微秒数
-  auto seconds = static_cast<time_t>(microsecondsSinceEpoch_ / MicrosecondsPerSecond);
-  int microseconds = static_cast<int>(microsecondsSinceEpoch_ % MicrosecondsPerSecond);
+  auto seconds = static_cast<time_t>(microsecondsSinceEpoch_ / kMicroSecondsPerSecond);
+  int microseconds = static_cast<int>(microsecondsSinceEpoch_ % kMicroSecondsPerSecond);
   struct tm t;
 
   // 将秒数转换为UTC时间结构
@@ -39,7 +39,7 @@ Timestamp Timestamp::now() {
   struct timeval tv;
   // 获取当前时间戳（秒和微秒）
   gettimeofday(&tv, nullptr);
-  return Timestamp(tv.tv_sec * MicrosecondsPerSecond + tv.tv_usec);
+  return Timestamp(tv.tv_sec * kMicroSecondsPerSecond + tv.tv_usec);
 }
 
 // 返回一个无效的时间戳

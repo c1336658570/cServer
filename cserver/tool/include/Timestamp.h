@@ -34,7 +34,7 @@ class Timestamp {
   static Timestamp invalid();
 
   // 定义每秒的微秒数
-  static const int MicrosecondsPerSecond = 1000 * 1000;
+  static const int kMicroSecondsPerSecond = 1000 * 1000;
 
  private:
   int64_t microsecondsSinceEpoch_;    // 存储时间戳的微秒数
@@ -52,7 +52,7 @@ inline bool operator==(Timestamp lhs, Timestamp rhs) {
 
 // 将时间戳增加指定秒数，并返回新的时间戳
 inline Timestamp addTime(Timestamp timestamp, double seconds) {
-  auto delta = static_cast<int64_t>(seconds * Timestamp::MicrosecondsPerSecond);
+  auto delta = static_cast<int64_t>(seconds * Timestamp::kMicroSecondsPerSecond);
   return Timestamp(timestamp.microsecondsSinceEpoch() + delta);
 }
 

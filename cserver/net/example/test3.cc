@@ -1,4 +1,4 @@
-// g++ test2.cc ../src/* ../../tool/src/* ../../log/src/*  -I ../include -I ../../tool/include -I ../../log/include/
+// g++ test3.cc ../src/* ../../tool/src/* ../../log/src/*  -I ../include -I ../../tool/include -I ../../log/include/
 #include <stdio.h>
 #include <string.h>
 #include "Channel.h"

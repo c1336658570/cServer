@@ -4,6 +4,7 @@
 #include "Logging.h"
 #include "Poller.h"
 #include "Channel.h"
+#include "TimerQueue.h"
 
 namespace cServer {
 
@@ -11,7 +12,9 @@ __thread EventLoop *t_loopInThisThread = 0;
 const int kPollTimeMs = 10000;
 
 EventLoop::EventLoop() : looping_(false), quit_(false), 
-                         threadId_(CurrentThread::tid()), poller_(new Poller(this)) {
+                         threadId_(CurrentThread::tid()), 
+                         poller_(new Poller(this)), 
+                         timerQueue_(new TimerQueue(this)) {
   LOG_TRACE << "EventLoop created " << this << " in thread " << threadId_;
   // 检查当前线程是否已经创建了其他EventLoop对象
   if (t_loopInThisThread) {
@@ -53,6 +56,25 @@ void EventLoop::loop() {
 void EventLoop::quit() {
   quit_ = true;   // 将quit_设为true终止事件循环
   // wakeup();
+}
+
+TimerId EventLoop::runAt(const Timestamp& time, const TimerCallback& cb) {
+  // 在指定时间'time'执行回调函数'cb'，定时器重复间隔为0.0表示单次触发
+  return timerQueue_->addTimer(cb, time, 0.0);
+}
+
+TimerId EventLoop::runAfter(double delay, const TimerCallback& cb) {
+  // 计算延迟'delay'后的时间点
+  Timestamp time(addTime(Timestamp::now(), delay));
+  // 在计算得到的时间点执行回调函数'cb'
+  return runAt(time, cb);
+}
+
+TimerId EventLoop::runEvery(double interval, const TimerCallback& cb) {
+  // 计算第一次执行回调函数'cb'的时间点
+  Timestamp time(addTime(Timestamp::now(), interval));
+  // 设置定时器，每隔'interval'秒执行一次回调函数'cb'
+  return timerQueue_->addTimer(cb, time, interval);
 }
 
 void EventLoop::updateChannel(Channel *channel) {

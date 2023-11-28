@@ -48,8 +48,8 @@ void Logger::Impl::formatTime() {
   // 获取时间戳的微秒数
   int64_t microsecondsSinceEpoch = time_.microsecondsSinceEpoch();
   // 将微秒数转换为秒数和微秒数
-  auto seconds = static_cast<time_t>(microsecondsSinceEpoch / Timestamp::MicrosecondsPerSecond);
-  int microseconds = static_cast<int>(microsecondsSinceEpoch % Timestamp::MicrosecondsPerSecond);
+  auto seconds = static_cast<time_t>(microsecondsSinceEpoch / Timestamp::kMicroSecondsPerSecond);
+  int microseconds = static_cast<int>(microsecondsSinceEpoch % Timestamp::kMicroSecondsPerSecond);
   // 如果秒数发生变化，则更新 t_lastSecond 和 t_time
   if (seconds != t_lastSecond) {
     t_lastSecond = seconds;
