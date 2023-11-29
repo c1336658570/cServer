@@ -104,7 +104,7 @@ std::string LogFile::getLogFileName(const std::string &basename, time_t *now) {
   }
 
   char pidbuf[32];
-  snprintf(pidbuf, sizeof pidbuf, ".%d", ::getpid());   // 获取进程ID
+  snprintf(pidbuf, sizeof(pidbuf), ".%d", ::getpid());   // 获取进程ID
   filename += pidbuf;
 
   filename += ".log";

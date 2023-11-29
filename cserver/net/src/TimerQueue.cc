@@ -2,6 +2,7 @@
 #include <sys/timerfd.h>
 #include <unistd.h>
 #include <cassert>
+#include <functional>
 #include "TimerQueue.h"
 #include "Logging.h"
 #include "Timer.h"
@@ -90,28 +91,45 @@ TimerQueue::TimerQueue(EventLoop *loop) :
   timerfdChannel_.enableReading();
 }
 
-// TimerQueue析构函数，释放资源
 TimerQueue::~TimerQueue() {
-  ::close(timerfd_);    // 关闭timerfd文件描述符
-  // 不移除Channel，因为在EventLoop析构时会移除
+  ::close(timerfd_);    // 关闭计时器文件描述符
+  // 不用移除channel，因为我们在 EventLoop::dtor() 中
   for (TimerList::iterator it = timers_.begin(); it != timers_.end(); ++it) {
-    delete it->second;      // 释放Timer对象的内存
+    delete it->second;
   }
 }
 
-// 向TimerQueue中添加定时器，返回TimerId，只有IO线程可以调，非线程安全
-TimerId TimerQueue::addTimer(const TimerCallback& cb, Timestamp when, double interval) {
-  // 创建Timer对象
-  Timer *timer = new Timer(cb, when, interval);
+// 向定时器队列中添加定时器的函数，创建定时器对象并异步加入事件循环中。
+// - cb: 定时器到期时要执行的回调函数
+// - when: 定时器的到期时间戳
+// - interval: 定时器的重复间隔时间
+TimerId TimerQueue::addTimer(const TimerCallback& cb,
+                             Timestamp when,
+                             double interval)
+{
+  // 创建一个新的定时器对象
+  Timer* timer = new Timer(cb, when, interval);
+  // 异步地将定时器对象加入事件循环中
+  loop_->runInLoop(
+      std::bind(&TimerQueue::addTimerInLoop, this, timer));
+  // 返回定时器的唯一标识 TimerId
+  return TimerId(timer);
+}
+
+// 在事件循环中添加定时器的函数，确保在事件循环所在的IO线程中执行。
+// - timer: 要添加的定时器对象指针
+void TimerQueue::addTimerInLoop(Timer* timer)
+{
+  // 断言当前线程是事件循环所在的IO线程
   loop_->assertInLoopThread();
-  // 将定时器插入TimerList中，并获取是否为最早到期的标志
+  // 将定时器插入到定时器队列中，并记录是否导致最早到期时间的改变
   bool earliestChanged = insert(timer);
 
-  // 如果插入的定时器是最早到期的，更新timerfd文件描述符的到期时间  
-  if (earliestChanged) {
+  // 如果最早到期时间发生了改变，重置定时器文件描述符的超时时间
+  if (earliestChanged)
+  {
     resetTimerfd(timerfd_, timer->expiration());
   }
-  return TimerId(timer);  // 返回TimerId
 }
 
 // 处理timerfd文件描述符可读事件的回调函数

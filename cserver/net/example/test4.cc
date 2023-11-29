@@ -4,7 +4,7 @@
 #include "EventLoop.h"
 
 int cnt = 0;
-cServer::EventLoop* g_loop;
+cServer::EventLoop *g_loop;
 
 void printTid() {
   printf("pid = %d, tid = %d\n", getpid(), cServer::CurrentThread::tid());

@@ -9,6 +9,7 @@
 #include "Callbacks.h"
 #include "Timestamp.h"
 #include "TimerId.h"
+#include "Mutex.h"
 
 namespace cServer {
 
@@ -21,26 +22,36 @@ class TimerQueue;
 // EventLoop对象的生命期通常和其所属的线程一样长，它不必是heap对象。
 class EventLoop : noncopyable {
  public:
+  typedef std::function<void()> Functor;
+
   EventLoop();
   ~EventLoop();
 
   void loop();
 
-  void quit();
+  void quit();    // 退出事件循环
 
   // 获取poll返回的时间戳，通常表示数据到达的时间。
   Timestamp pollReturnTime() const { return pollReturnTime_; }
 
+  // 如果用户在当前IO线程调用这个函数，回调会同步进行；
+  // 如果用户在其他线程调用runInLoop()，cb会被加入队列，IO线程会被唤醒来调用这个Functor。
+  void runInLoop(const Functor &cb);
+  // 在循环线程中排队回调。
+  void queueInLoop(const Functor &cb);
+
   // 这几个EventLoop成员函数应该允许跨线程使用，比方说我想在某个IO线程中执行超时回调。
 
-  // 在指定的时间'time'执行回调函数'cb'。
+  // 在指定的时间'time'执行回调函数'cb'。在其他线程调用是线程安全的
   TimerId runAt(const Timestamp& time, const TimerCallback& cb);
-  // 在延迟'delay'秒后执行回调函数'cb'。
+  // 在延迟'delay'秒后执行回调函数'cb'。在其他线程调用是线程安全的
   TimerId runAfter(double delay, const TimerCallback& cb);
-  // 每隔'interval'秒执行一次回调函数'cb'。
+  // 每隔'interval'秒执行一次回调函数'cb'。在其他线程调用是线程安全的
   TimerId runEvery(double interval, const TimerCallback& cb);
 
   // void cancel(TimerId timerId);
+
+  void wakeup();    // 唤醒
 
   void updateChannel(Channel* channel);
   // void removeChannel(Channel* channel);
@@ -63,17 +74,25 @@ class EventLoop : noncopyable {
  private:
   // 中止程序并输出错误消息，用于在非法线程中调用 assertInLoopThread() 时使用
   void abortNotInLoopThread();
+  void handleRead();          // 处理读事件，用于唤醒
+  void doPendingFunctors();   // 执行等待中的回调函数
 
   typedef std::vector<Channel *> ChannelList;
 
   // 事件循环(loop)是否正在运行的标志（原子操作）
-  bool looping_;    // atomic
-  bool quit_;       // atomic
-  const pid_t threadId_;
-  Timestamp pollReturnTime_;
-  std::unique_ptr<Poller> poller_;  // EventLoop的poller对象
+  bool looping_;    // 是否在事件循环中
+  bool quit_;       // 是否退出事件循环
+  bool callingPendingFunctors_;     // 是否正在调用等待中的回调函数
+  const pid_t threadId_;            // IO线程的线程ID
+  Timestamp pollReturnTime_;        // poll返回的时间戳
+  std::unique_ptr<Poller> poller_;  // Poller对象，用于事件的轮询
   std::unique_ptr<TimerQueue> timerQueue_;    // 定时事件队列
-  ChannelList activeChannels_;      // 活动的channel
+  int wakeupFd_;                              // 用于唤醒的文件描述符
+  // 与TimerQueue不同，该类不会将Channel暴露给客户端。
+  std::unique_ptr<Channel> wakeupChannel_;  // 用于处理wakeupFd_上的readable事件，将事件分发至handleRead()函数。
+  ChannelList activeChannels_;              // 活动的channel
+  MutexLock mutex_;                         // 互斥锁，保护等待中的回调函数队列
+  std::vector<Functor> pendingFunctors_;    // mutex_ 等待中的回调函数队列
 };
 
 } // namespace cServer
