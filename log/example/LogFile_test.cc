@@ -1,4 +1,4 @@
-// g++ LogFile_test.cc ../log/src/* ../tool/src/* -I../log/include/ -I../tool/include
+// g++ LogFile_test.cc ../src/* ../../tool/src/* -I ../include -I ../../tool/include
 #include "LogFile.h"
 #include "Logging.h"
 

@@ -24,7 +24,7 @@ struct ThreadData {
 
 // 由pthread_create调用的启动线程的函数
 void *startThread(void *obj) {
-  ThreadData* data = static_cast<ThreadData *>(obj);
+  ThreadData *data = static_cast<ThreadData *>(obj);
   data->runInThread();      // 执行线程函数
   delete data;              // 释放为ThreadData分配的内存
   return NULL;

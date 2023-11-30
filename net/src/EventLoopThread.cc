@@ -19,7 +19,7 @@ EventLoopThread::~EventLoopThread() {
 }
 
 // 启动事件循环线程，并等待事件循环对象的创建完成，返回事件循环的指针。
-EventLoop* EventLoopThread::startLoop() {
+EventLoop *EventLoopThread::startLoop() {
   assert(!thread_.started());  // 断言事件循环线程未启动
   thread_.start();             // 启动事件循环线程
 

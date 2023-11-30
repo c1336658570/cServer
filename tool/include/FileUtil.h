@@ -27,7 +27,7 @@ class AppendFile : noncopyable {
 
  private:
  // 实际执行写操作的函数，返回写入的字节数
-  size_t write(const char* logline, size_t len);
+  size_t write(const char *logline, size_t len);
 
   FILE *fp_;                  // 文件指针，用于操作文件流
   char buffer_[64 * 1024];    // 文件输出缓冲区，用于缓存写入的数据

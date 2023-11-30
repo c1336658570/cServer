@@ -51,7 +51,7 @@ void Poller::fillActiveChannels(int numEvents, ChannelList *activeChannels) cons
 // 负责维护和更新pollfds_数组。
 // 添加新Channel的复杂度是O(logN)，更新已有的Channel的复杂度是O(1)，
 // 因为Channel记住了自己在pollfds_数组中的下标，因此可以快速定位。removeChannel()的复杂度也将会是O(logN)。
-void Poller::updateChannel(Channel* channel) {
+void Poller::updateChannel(Channel *channel) {
   assertInLoopThread();
   LOG_TRACE << "fd = " << channel->fd() << " events = " << channel->events();
   if (channel->index() < 0) {

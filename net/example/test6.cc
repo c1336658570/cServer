@@ -1,3 +1,4 @@
+// g++ test6.cc ../src/* ../../tool/src/* ../../log/src/*  -I ../include -I ../../tool/include -I ../../log/include/
 #include <stdio.h>
 #include "EventLoop.h"
 #include "EventLoopThread.h"

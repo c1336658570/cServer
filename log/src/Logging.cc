@@ -9,7 +9,7 @@ namespace cServer {
   __thread time_t t_lastSecond;     // 当前线程上一次日志记录时的秒数
 
 // 返回给定错误码（savedErrno）对应的错误信息字符串。
-const char* strerror_tl(int savedErrno) {
+const char *strerror_tl(int savedErrno) {
   return strerror_r(savedErrno, t_errnoBuf, sizeof(t_errnoBuf));
 }
 

@@ -43,18 +43,18 @@ class EventLoop : noncopyable {
   // 这几个EventLoop成员函数应该允许跨线程使用，比方说我想在某个IO线程中执行超时回调。
 
   // 在指定的时间'time'执行回调函数'cb'。在其他线程调用是线程安全的
-  TimerId runAt(const Timestamp& time, const TimerCallback& cb);
+  TimerId runAt(const Timestamp &time, const TimerCallback &cb);
   // 在延迟'delay'秒后执行回调函数'cb'。在其他线程调用是线程安全的
-  TimerId runAfter(double delay, const TimerCallback& cb);
+  TimerId runAfter(double delay, const TimerCallback &cb);
   // 每隔'interval'秒执行一次回调函数'cb'。在其他线程调用是线程安全的
-  TimerId runEvery(double interval, const TimerCallback& cb);
+  TimerId runEvery(double interval, const TimerCallback &cb);
 
   // void cancel(TimerId timerId);
 
   void wakeup();    // 唤醒
 
-  void updateChannel(Channel* channel);
-  // void removeChannel(Channel* channel);
+  void updateChannel(Channel *channel);
+  // void removeChannel(Channel *channel);
 
   // 检查当前调用线程是否为 EventLoop 对象所属的线程  
   void assertInLoopThread() {

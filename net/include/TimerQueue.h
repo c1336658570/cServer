@@ -36,7 +36,7 @@ class TimerQueue : noncopyable {
    */
   typedef std::set<Entry> TimerList;
 
-  void addTimerInLoop(Timer* timer);
+  void addTimerInLoop(Timer *timer);
 
   // 当timerfd的时间到期时调用
   void handleRead();

@@ -1,4 +1,4 @@
-// g++ testAsyncLog.cc  ../log/src/* ../tool/src/*  -I../log/include/ -I../tool/include
+// g++ testAsyncLog.cc ../src/* ../../tool/src/* -I ../include -I ../../tool/include
 #include <chrono>
 #include <iostream>
 #include <memory>

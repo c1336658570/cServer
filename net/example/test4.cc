@@ -11,7 +11,7 @@ void printTid() {
   printf("now %s\n", cServer::Timestamp::now().toString().c_str());
 }
 
-void print(const char* msg) {
+void print(const char *msg) {
   printf("msg %s %s\n", cServer::Timestamp::now().toString().c_str(), msg);
   if (++cnt == 20) {
     g_loop->quit();

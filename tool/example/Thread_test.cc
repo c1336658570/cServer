@@ -1,6 +1,6 @@
-//  g++ Thread_test.cc ../tool/src/* ../log/src/* -I ../tool/include -I ../log/include
+//  g++ Thread_test.cc ../src/* ../../log/src/* -I ../include -I ../../log/include
 #include <functional>
-#include "../tool/include/Thread.h"
+#include "Thread.h"
 
 void threadFunc()
 {

@@ -103,12 +103,12 @@ TimerQueue::~TimerQueue() {
 // - cb: 定时器到期时要执行的回调函数
 // - when: 定时器的到期时间戳
 // - interval: 定时器的重复间隔时间
-TimerId TimerQueue::addTimer(const TimerCallback& cb,
+TimerId TimerQueue::addTimer(const TimerCallback &cb,
                              Timestamp when,
                              double interval)
 {
   // 创建一个新的定时器对象
-  Timer* timer = new Timer(cb, when, interval);
+  Timer *timer = new Timer(cb, when, interval);
   // 异步地将定时器对象加入事件循环中
   loop_->runInLoop(
       std::bind(&TimerQueue::addTimerInLoop, this, timer));
@@ -118,7 +118,7 @@ TimerId TimerQueue::addTimer(const TimerCallback& cb,
 
 // 在事件循环中添加定时器的函数，确保在事件循环所在的IO线程中执行。
 // - timer: 要添加的定时器对象指针
-void TimerQueue::addTimerInLoop(Timer* timer)
+void TimerQueue::addTimerInLoop(Timer *timer)
 {
   // 断言当前线程是事件循环所在的IO线程
   loop_->assertInLoopThread();
