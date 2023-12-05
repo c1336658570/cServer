@@ -3,6 +3,8 @@
 
 #include <string>
 #include <netinet/in.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 namespace cServer {
 
@@ -13,7 +15,7 @@ class InetAddress {
   // 根据给定的IP地址和端口号构造一个网络地址对象。
   InetAddress(const std::string &ip, uint16_t port);
   // 根据给定的sockaddr_in结构体构造一个网络地址对象，主要用于接受新连接。
-  InetAddress(struct sockaddr_in &addr) : addr_(addr) {
+  InetAddress(const struct sockaddr_in &addr) : addr_(addr) {
   }
 
   // 获取网络地址的主机名和端口号，返回格式为"host:port"的字符串。
@@ -32,6 +34,8 @@ class InetAddress {
  private:
   struct sockaddr_in addr_;       // 保存网络地址的信息。
 };
+
+struct sockaddr_in getLocalAddr(int sockfd);
 
 } // namespcae cServer
 

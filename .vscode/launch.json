@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/home/cccmmf/webserver/net/src",
-      "program": "/home/cccmmf/webserver/net/src/build/Debug/outDebug",
+      "cwd": "/home/cccmmf/webserver",
+      "program": "/home/cccmmf/webserver/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

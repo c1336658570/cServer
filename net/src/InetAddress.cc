@@ -1,6 +1,7 @@
 #include <cstring>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/socket.h>
 #include "InetAddress.h"
 #include "Logging.h"
 
@@ -42,4 +43,15 @@ std::string InetAddress::toHostPort() const {
   return buf;
 }
 
+// 获取套间子的本地地址
+struct sockaddr_in getLocalAddr(int sockfd) {
+  struct sockaddr_in localaddr;
+  bzero(&localaddr, sizeof localaddr);
+  socklen_t addrlen = sizeof(localaddr);
+  if (::getsockname(sockfd, (struct sockaddr *)(&localaddr), &addrlen) < 0) {
+    LOG_SYSERR << "getLocalAddr";
+  }
+  return localaddr;
 }
+
+}  // namespace cServer
