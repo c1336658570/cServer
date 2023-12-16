@@ -8,6 +8,8 @@
 
 namespace cServer {
 
+int getSocketError(int sockfd);
+
 class Channel;
 class EventLoop;
 class Socket;
@@ -54,14 +56,23 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
     messageCallback_ = cb;
   }
 
+  // 仅供内部使用。
+  // 设置连接关闭时的回调函数
+  void setCloseCallback(const CloseCallback &cb) {
+    closeCallback_ = cb;
+  }
+
   // 当TcpServer接受新连接时调用，用于完成连接的建立
-  void connectEstablished();   // 应该仅被调用一次
+  void connectEstablished();    // 应该仅被调用一次
+  // 当TcpServer将TcpConnection从其映射中移除时调用，表示连接已销毁
+  void connectDestroyed();      // 应该只被调用一次
 
  private:
   // 表示连接状态的枚举
   enum StateE {
     kConnecting,
     kConnected,
+    kDisconnected,
   };
 
   // 设置连接状态
@@ -69,8 +80,10 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
     state_ = s;
   }
   
-  // 处理读事件，当有数据可读时被调用
-  void handleRead();
+  void handleRead();      // 处理读事件
+  void handleWrite();     // 处理写事件
+  void handleClose();     // 处理连接关闭事件
+  void handleError();     // 处理连接错误事件
 
   // 保存事件循环对象指针
   EventLoop *loop_;
@@ -86,10 +99,12 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
   InetAddress localAddr_;
   // 对端地址
   InetAddress peerAddr_;
-  // 连接建立时的回调函数
+  // 连接建立和断开连接时的回调函数
   ConnectionCallback connectionCallback_;
   // 消息到达时的回调函数
   MessageCallback messageCallback_;
+  // 连接关闭回调函数，这个回调是给TcpServer和TcpClient用的，用于通知它们移除所持有的TcpConnectionPtr
+  CloseCallback closeCallback_;
 };
 
 // TcpConnection类的智能指针类型

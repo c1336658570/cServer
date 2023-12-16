@@ -54,7 +54,7 @@ class EventLoop : noncopyable {
   void wakeup();    // 唤醒
 
   void updateChannel(Channel *channel);
-  // void removeChannel(Channel *channel);
+  void removeChannel(Channel *channel);
 
   // 检查当前调用线程是否为 EventLoop 对象所属的线程  
   void assertInLoopThread() {
@@ -83,7 +83,7 @@ class EventLoop : noncopyable {
   bool looping_;    // 是否在事件循环中
   bool quit_;       // 是否退出事件循环
   bool callingPendingFunctors_;     // 是否正在调用等待中的回调函数
-  const pid_t threadId_;            // IO线程的线程ID
+  const pid_t threadId_;            // 当前EventLoop所属的IO线程的线程ID
   Timestamp pollReturnTime_;        // poll返回的时间戳
   std::unique_ptr<Poller> poller_;  // Poller对象，用于事件的轮询
   std::unique_ptr<TimerQueue> timerQueue_;    // 定时事件队列

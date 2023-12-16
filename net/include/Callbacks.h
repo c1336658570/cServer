@@ -18,6 +18,9 @@ typedef std::function<void()> TimerCallback;
 typedef std::function<void(const TcpConnectionPtr &)> ConnectionCallback;
 typedef std::function<void (const TcpConnectionPtr &, const char *data, ssize_t len)> MessageCallback;
 
+// 连接关闭时的回调函数类型
+typedef std::function<void (const TcpConnectionPtr&)> CloseCallback;
+
 } // namespace cServer
 
 #endif  // CSERVER_NET_INCLUDE_CALLBACKS_

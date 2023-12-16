@@ -12,6 +12,7 @@ namespace cServer {
 class Acceptor;
 class EventLoop;
 
+// 管理accept(2)获得的TcpConnection。TcpServer是供用户直接使用的，生命期由用户控制。
 // TcpServer类，用于管理TCP服务器
 class TcpServer : noncopyable {
  public:
@@ -36,13 +37,15 @@ class TcpServer : noncopyable {
  private:
   // 处理新连接的函数，非线程安全但在事件循环中调用
   void newConnection(int sockfd, const InetAddress& peerAddr);
+  // 从 TcpServer 的连接映射中移除指定的 TcpConnection 对象
+  void removeConnection(const TcpConnectionPtr& conn);
 
   // 定义一个连接映射，用于存储已建立连接的TcpConnection对象
   typedef std::map<std::string, TcpConnectionPtr> ConnectionMap;
 
   EventLoop *loop_;                         // TcpServer所属的事件循环
   const std::string name_;                  // 服务器的名称
-  std::shared_ptr<Acceptor> acceptor_;      // 避免直接暴露Acceptor对象
+  std::unique_ptr<Acceptor> acceptor_;      // 避免直接暴露Acceptor对象，使用Acceptor来获得新连接的fd。
   ConnectionCallback connectionCallback_;   // 连接回调函数
   MessageCallback messageCallback_;         // 消息回调函数
   bool started_;                            // 服务器是否已启动标志

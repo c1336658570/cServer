@@ -30,6 +30,10 @@ class Poller : noncopyable {
 
   void updateChannel(Channel *channel);   // 更新channel的监听状态
 
+  // 从 EventLoop 中移除指定的 Channel 对象。
+  // 该函数用于在 Channel 对象析构时调用，必须在 EventLoop 线程中调用。
+  void removeChannel(Channel* channel);
+
   // 检查调用线程是否是所有者EventLoop的线程。
   void assertInLoopThread() {
     ownerLoop_->assertInLoopThread();

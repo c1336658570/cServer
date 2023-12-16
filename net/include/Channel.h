@@ -20,6 +20,8 @@ class Channel : noncopyable {
   typedef std::function<void()> EventCallback;    // 定义回调函数类型
 
   Channel(EventLoop *loop, int fd);   // 构造函数，所属的EventLoop和channel所管理的fd
+  ~Channel();                         // 析构函数
+
 
   // 处理事件的函数  
   void handleEvent();
@@ -32,6 +34,10 @@ class Channel : noncopyable {
   }
   void setErrorCallback(const EventCallback &cb) {
     errorCallback_ = cb;
+  }
+  // 设置关闭事件回调函数
+  void setCloseCallback(const EventCallback &cb) {
+    closeCallback_ = cb;
   }
 
   // 获取文件描述符
@@ -58,7 +64,11 @@ class Channel : noncopyable {
   }
   // void enableWriting() { events_ |= kWriteEvent; update(); }
   // void disableWriting() { events_ &= ~kWriteEvent; update(); }
-  // void disableAll() { events_ = kNoneEvent; update(); }
+  // 禁用所有关注的事件
+  void disableAll() {
+    events_ = kNoneEvent;
+    update();
+  }
 
   // 获取在Poller中的索引
   int index() {
@@ -89,9 +99,12 @@ class Channel : noncopyable {
   int revents_;     // 目前活动的事件，由EventLoop/poller设置
   int index_;       // used by Poller.
 
+  bool eventHandling_;    // 是否正在处理事件
+
   EventCallback readCallback_;    // 读回调
   EventCallback writeCallback_;   // 写回调
   EventCallback errorCallback_;   // 异常回调
+  EventCallback closeCallback_;   // 关闭连接回调
 };
 
 }  // namespace cServer

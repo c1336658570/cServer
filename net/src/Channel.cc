@@ -19,7 +19,13 @@ const int Channel::kReadEvent = POLLIN | POLLPRI;
 const int Channel::kWriteEvent = POLLOUT;
 
 // loop此channel所属的EventLoop，fdArg，此channel管理的文件描述符
-Channel::Channel(EventLoop *loop, int fdArg) : loop_(loop), fd_(fdArg), events_(0), revents_(0), index_(-1) {
+Channel::Channel(EventLoop *loop, int fdArg) : loop_(loop), fd_(fdArg), 
+events_(0), revents_(0), index_(-1), eventHandling_(false) {
+}
+
+// Channel 类的析构函数，确保在处理事件时不会被析构
+Channel::~Channel() {
+  assert(!eventHandling_);
 }
 
 // 调用EventLoop::updateChannel()，后者会转而调用Poller::updateChannel()。
@@ -29,11 +35,21 @@ void Channel::update() {
 }
 
 // Channel::handleEvent()是Channel的核心，它由EventLoop::loop()调用，根据revents_的值分别调用不同的用户回调。
-void Channel::handleEvent()
-{
+void Channel::handleEvent() {
+  // 标识当前正在处理事件
+  eventHandling_ = true;
+
   // 检查POLLNVAL事件（无效的请求）
   if (revents_ & POLLNVAL) {
     LOG_WARN << "Channel::handle_event() POLLNVAL";
+  }
+
+  // 处理 POLLHUP 事件，同时确保没有发生 POLLIN 事件
+  if ((revents_ & POLLHUP) && !(revents_ & POLLIN)) {
+    LOG_WARN << "Channel::handle_event() POLLHUP";
+    if (closeCallback_) {
+      closeCallback_();
+    }
   }
 
   // 检查POLLERR和POLLNVAL事件（错误事件）
@@ -56,6 +72,9 @@ void Channel::handleEvent()
       writeCallback_();
     }
   }
+
+  // 标识事件处理完成
+  eventHandling_ = false;
 }
 
 } // namespace cServer

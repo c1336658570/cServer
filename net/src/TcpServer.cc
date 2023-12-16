@@ -53,7 +53,23 @@ void TcpServer::newConnection(int sockfd, const InetAddress &peerAddr) {
   connections_[connName] = conn;                      // 将连接对象添加到连接映射中
   conn->setConnectionCallback(connectionCallback_);   // 设置连接回调函数
   conn->setMessageCallback(messageCallback_);         // 设置消息回调函数
+  // 设置关闭时回调函数
+  conn->setCloseCallback(std::bind(&TcpServer::removeConnection, this, std::placeholders::_1));
   conn->connectEstablished();                         // 调用连接建立函数，完成连接的建立
+}
+
+// 从TcpServer的连接映射中移除指定的TcpConnection对象
+void TcpServer::removeConnection(const TcpConnectionPtr &conn) {
+  // 断言确保在TcpServer所属的EventLoop所属的线程中调用该函数
+  loop_->assertInLoopThread();
+  // 记录日志，标明正在移除连接
+  LOG_INFO << "TcpServer::removeConnection [" << name_
+           << "] - connection " << conn->name();
+  // 从连接映射中移除指定的TcpConnection对象
+  size_t n = connections_.erase(conn->name());
+  assert(n == 1); (void)n;    // 断言确保只移除了一个 TcpConnection
+  // 在所属的EventLoop中执行连接销毁操作，通过queueInLoop确保在下一次事件循环中执行
+  loop_->queueInLoop(std::bind(&TcpConnection::connectDestroyed, conn));
 }
 
 }  // namespace cServer

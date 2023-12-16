@@ -43,7 +43,7 @@ class TimerQueue : noncopyable {
 
   // 移除所有已过期的定时器
   std::vector<Entry> getExpired(Timestamp now);
-  // 重置定时器列表，将未过期的定时器重新插入
+  // 重置定时器列表，将重复定时器重新插入
   void reset(const std::vector<Entry> &expired, Timestamp now);
 
   // 插入一个定时器到定时器列表中

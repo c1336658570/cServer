@@ -72,7 +72,7 @@ void Poller::updateChannel(Channel *channel) {
     int idx = channel->index();
     assert(0 <= idx && idx < static_cast<int>(pollfds_.size()));
     struct pollfd& pfd = pollfds_[idx];
-    assert(pfd.fd == channel->fd() || pfd.fd == -1);
+    assert(pfd.fd == channel->fd() || pfd.fd == -channel->fd()-1);
     pfd.events = static_cast<short>(channel->events());
     pfd.revents = 0;
     if (channel->isNoneEvent()) {
@@ -80,9 +80,51 @@ void Poller::updateChannel(Channel *channel) {
       // 如果某个Channel暂时不关心任何事件，就把pollfd.fd设为-1，让poll(2)忽略此项
       // 不能改为把pollfd.events设为0，这样无法屏蔽POLLER事件。
       // 改进的做法是把pollfd.fd设为channel->fd()的相反数减一，这样可以进一步检查invariant。
-      pfd.fd = -1;
+      // pfd.fd = -1;
+      pfd.fd = -channel->fd()-1;
     }
   }
 }
+
+// 从 Poller 中移除指定的 Channel 对象
+void Poller::removeChannel(Channel *channel) {
+  assertInLoopThread();
+  // 记录日志，标明正在移除的文件描述符（fd）
+  LOG_TRACE << "fd = " << channel->fd();
+  // 断言确保要移除的 Channel 在 channels_ 中存在
+  assert(channels_.find(channel->fd()) != channels_.end());
+  // 断言确保在 channels_ 中找到的 Channel 就是要移除的 Channel
+  assert(channels_[channel->fd()] == channel);
+  // 断言确保 Channel 的事件状态为 kNoneEvent
+  assert(channel->isNoneEvent());
+  // 获取要移除的 Channel 在 pollfds_ 中的索引
+  int idx = channel->index();
+  // 断言确保索引值在合法范围内
+  assert(0 <= idx && idx < static_cast<int>(pollfds_.size()));
+  // 获取指定索引处的 pollfd 结构体
+  const struct pollfd &pfd = pollfds_[idx]; (void)pfd;
+  // 断言确保该 pollfd 结构体与 Channel 的状态一致
+  assert(pfd.fd == -channel->fd()-1 && pfd.events == channel->events());
+  // 从 channels_ 中移除指定的 Channel
+  size_t n = channels_.erase(channel->fd());
+  // 断言确保移除的 Channel 数量为 1
+  assert(n == 1); (void)n;
+  // 如果要移除的 Channel 在 pollfds_ 中的索引是最后一个，则直接弹出
+  if (static_cast<size_t>(idx) == pollfds_.size()-1) {
+    pollfds_.pop_back();
+  } else {
+    // 否则，将最后一个 pollfd 移动到要移除的位置
+    int channelAtEnd = pollfds_.back().fd;
+    iter_swap(pollfds_.begin()+idx, pollfds_.end()-1);
+    if (channelAtEnd < 0) {
+      channelAtEnd = -channelAtEnd-1;
+    }
+    // 更新最后一个 Channel 在 channels_ 中的索引
+    channels_[channelAtEnd]->set_index(idx);
+    // 弹出最后一个 pollfd
+    pollfds_.pop_back();
+  }
+}
+
 
 }

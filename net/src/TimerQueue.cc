@@ -147,7 +147,7 @@ void TimerQueue::handleRead() {
     it->second->run();
   }
 
-  // 重新设置定时器列表中剩余定时器的到期时间
+  // 如果是重复定时器，重新设置定时器列表中剩余定时器的到期时间
   reset(expired, now);
 }
 
@@ -174,7 +174,7 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now) {
   return expired;  // 返回包含已过期定时器的vector
 }
 
-// 重新设置定时器列表中剩余定时器的到期时间
+// 如果是重复定时器，重新设置定时器列表中剩余定时器的到期时间
 void TimerQueue::reset(const std::vector<Entry> &expired, Timestamp now) {
   Timestamp nextExpire;
 

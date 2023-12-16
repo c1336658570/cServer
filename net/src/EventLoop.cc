@@ -156,6 +156,13 @@ void EventLoop::updateChannel(Channel *channel) {
   poller_->updateChannel(channel);  // 调用Poller的updateChannel()来更新Channel的状态（监听读/写/或不监听）
 }
 
+// 从 EventLoop 中移除指定的 Channel 对象
+void EventLoop::removeChannel(Channel* channel) {
+  assert(channel->ownerLoop() == this);   // 断言确保要移除的 Channel 属于当前 EventLoop
+  assertInLoopThread();                   // 断言确保在当前 EventLoop 线程中调用该函数
+  poller_->removeChannel(channel);        // 调用Poller的removeChannel函数，将Channel从事件管理中移除
+}
+
 void EventLoop::abortNotInLoopThread() {
   LOG_FATAL << "EventLoop::abortNotInLoopThread - EventLoop " << this
             << " was created in threadId_ = " << threadId_
@@ -195,6 +202,8 @@ void EventLoop::doPendingFunctors()
   std::vector<Functor> functors;
   callingPendingFunctors_ = true;
 
+  // 把回调列表swap()到局部变量functors中，这样一方面减小了临界区的长度（意味着不会阻塞其他线程调用queueInLoop()），
+  // 另一方面也避免了死锁（因为Functor可能再调用queueInLoop()）。
   {
   // 使用互斥锁保护对等待中回调函数队列的操作
   MutexLockGuard lock(mutex_);
