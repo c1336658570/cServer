@@ -3,10 +3,13 @@
 
 #include <functional>
 #include <memory>
+#include "Timestamp.h"
 
 namespace cServer {
 
 // 所有客户端可见的回调函数都定义在这里。
+
+class Buffer;
 
 class TcpConnection;
 typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
@@ -16,10 +19,10 @@ typedef std::function<void()> TimerCallback;
 
 // 定义TcpConnection回调函数
 typedef std::function<void(const TcpConnectionPtr &)> ConnectionCallback;
-typedef std::function<void (const TcpConnectionPtr &, const char *data, ssize_t len)> MessageCallback;
+typedef std::function<void(const TcpConnectionPtr &, Buffer *buf, Timestamp)> MessageCallback;
 
 // 连接关闭时的回调函数类型
-typedef std::function<void (const TcpConnectionPtr&)> CloseCallback;
+typedef std::function<void(const TcpConnectionPtr &)> CloseCallback;
 
 } // namespace cServer
 

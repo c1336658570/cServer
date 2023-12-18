@@ -69,7 +69,7 @@ void TcpServer::removeConnection(const TcpConnectionPtr &conn) {
   size_t n = connections_.erase(conn->name());
   assert(n == 1); (void)n;    // 断言确保只移除了一个 TcpConnection
   // 在所属的EventLoop中执行连接销毁操作，通过queueInLoop确保在下一次事件循环中执行
-  loop_->queueInLoop(std::bind(&TcpConnection::connectDestroyed, conn));
+  loop_->queueInLoop(std::bind(&TcpConnection::connectDestroyed, conn));  // 使用std::bind让TcpConnect声明其长到调用connectDestroyed()的时刻
 }
 
 }  // namespace cServer

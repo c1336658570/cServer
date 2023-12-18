@@ -3,6 +3,7 @@
 
 #include <functional>
 #include "noncopyable.h"
+#include "Timestamp.h"
 
 namespace cServer {
 
@@ -18,15 +19,16 @@ class EventLoop;
 class Channel : noncopyable {
  public:
   typedef std::function<void()> EventCallback;    // 定义回调函数类型
+  typedef std::function<void(Timestamp)> ReadEventCallback;   // 读回调
 
   Channel(EventLoop *loop, int fd);   // 构造函数，所属的EventLoop和channel所管理的fd
   ~Channel();                         // 析构函数
 
 
   // 处理事件的函数  
-  void handleEvent();
+  void handleEvent(Timestamp receiveTime);
   // 设置读、写、异常回调函数
-  void setReadCallback(const EventCallback &cb) {
+  void setReadCallback(const ReadEventCallback &cb) {
     readCallback_ = cb;
   }
   void setWriteCallback(const EventCallback &cb) {
@@ -101,10 +103,10 @@ class Channel : noncopyable {
 
   bool eventHandling_;    // 是否正在处理事件
 
-  EventCallback readCallback_;    // 读回调
-  EventCallback writeCallback_;   // 写回调
-  EventCallback errorCallback_;   // 异常回调
-  EventCallback closeCallback_;   // 关闭连接回调
+  ReadEventCallback readCallback_;    // 读回调
+  EventCallback writeCallback_;       // 写回调
+  EventCallback errorCallback_;       // 异常回调
+  EventCallback closeCallback_;       // 关闭连接回调
 };
 
 }  // namespace cServer

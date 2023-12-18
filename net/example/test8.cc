@@ -4,7 +4,7 @@
 #include "InetAddress.h"
 #include "TcpServer.h"
 
-void onConnection(const cServer::TcpConnectionPtr& conn) {
+void onConnection(const cServer::TcpConnectionPtr &conn) {
   if (conn->connected()) {
     printf("onConnection(): new connection [%s] from %s\n",
            conn->name().c_str(), conn->peerAddress().toHostPort().c_str());
@@ -13,10 +13,13 @@ void onConnection(const cServer::TcpConnectionPtr& conn) {
   }
 }
 
-void onMessage(const cServer::TcpConnectionPtr& conn, const char* data,
-               ssize_t len) {
-  printf("onMessage(): received %zd bytes from connection [%s]\n", len,
-         conn->name().c_str());
+void onMessage(const cServer::TcpConnectionPtr &conn, cServer::Buffer *buf,
+               cServer::Timestamp receiveTime) {
+  printf("onMessage(): received %zd bytes from connection [%s] at %s\n",
+         buf->readableBytes(), conn->name().c_str(),
+         receiveTime.toFormatString().c_str());
+
+  printf("onMessage(): [%s]\n", buf->retrieveAsString().c_str());
 }
 
 int main() {

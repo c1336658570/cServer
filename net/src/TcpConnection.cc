@@ -30,7 +30,7 @@ localAddr_(localAddr),                // 初始化本地地址
 peerAddr_(peerAddr) {                 // 初始化对端地址
   LOG_DEBUG << "TcpConnection::ctor[" <<  name_ << "] at " << this << " fd=" << sockfd;
   // 设置 Channel 的读、写、关闭、错误事件回调函数
-  channel_->setReadCallback(std::bind(&TcpConnection::handleRead, this));   // 设置读回调函数为handleRead
+  channel_->setReadCallback(std::bind(&TcpConnection::handleRead, this, std::placeholders::_1));   // 设置读回调函数为handleRead
   channel_->setWriteCallback(std::bind(&TcpConnection::handleWrite, this));
   channel_->setCloseCallback(std::bind(&TcpConnection::handleClose, this));
   channel_->setErrorCallback(std::bind(&TcpConnection::handleError, this));
@@ -59,6 +59,7 @@ void TcpConnection::connectDestroyed() {
   loop_->assertInLoopThread();
   assert(state_ == kConnected);
   setState(kDisconnected);
+  // 此处的disableAll和handleClose的disableALL是重复的，因为有时候connectDestroyed不经由handleclose调用，而是直接调用connectDestroyed()
   channel_->disableAll();     // 禁用 Channel 的所有事件关注
   connectionCallback_(shared_from_this());      // 调用连接建立和断开连接时的回调函数
 
@@ -66,14 +67,16 @@ void TcpConnection::connectDestroyed() {
 }
 
 // 处理读事件，当有数据可读时被调用
-void TcpConnection::handleRead() {
-  char buf[65536];
-  ssize_t n = ::read(channel_->fd(), buf, sizeof(buf));
+void TcpConnection::handleRead(Timestamp receiveTime) {
+  int savedErrno = 0;   // 保存错误号
+  ssize_t n = inputBuffer_.readFd(channel_->fd(), &savedErrno);   // 从套接字读取数据到输入缓冲区
   if (n > 0) {
-    messageCallback_(shared_from_this(), buf, n);     // 调用消息到达回调函数
+    messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);     // 调用消息到达回调函数
   } else if (n == 0) {
     handleClose();        // 处理连接关闭事件
   } else {
+    errno = savedErrno;
+    LOG_SYSERR << "TcpConnection::handleRead";
     handleError();        // 处理连接错误事件
   }
 }

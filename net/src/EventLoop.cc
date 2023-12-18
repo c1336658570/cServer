@@ -78,10 +78,10 @@ void EventLoop::loop() {
   while (!quit_) {
     // 清空活跃channel列表和轮询返回时间
     activeChannels_.clear();
-    poller_->poll(kPollTimeMs, &activeChannels_);   // 调用Poller::poll()获得当前活动事件的Channel列表
+    pollReturnTime_ = poller_->poll(kPollTimeMs, &activeChannels_);   // 调用Poller::poll()获得当前活动事件的Channel列表
     for (ChannelList::iterator it = activeChannels_.begin(); it != activeChannels_.end(); ++it) {
       // 依次调用每个Channel的handleEvent()函数。
-      (*it)->handleEvent();
+      (*it)->handleEvent(pollReturnTime_);
     }
     doPendingFunctors();    // 执行等待中的回调函数
   }

@@ -8,12 +8,13 @@
 cServer::EventLoop *g_loop;  // 全局指针，用于在timeout中通知事件循环退出
 
 // poll(2)是level trigger，在timeout()中应该read() timefd，否则下次会立刻触发。
-void timeout() {
-  printf("Timeout!\n");
+void timeout(cServer::Timestamp receiveTime) {
+  printf("%s Timeout!\n", receiveTime.toFormatString().c_str());
   g_loop->quit();  // 在超时时通知事件循环退出
 }
 
 int main() {
+  printf("%s started\n", cServer::Timestamp::now().toFormatString().c_str());
   cServer::EventLoop loop;  // 创建事件循环对象
   g_loop = &loop;  // 将全局指针指向事件循环对象，以便在timeout函数中使用
 

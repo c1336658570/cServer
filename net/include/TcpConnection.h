@@ -2,6 +2,7 @@
 #define CSERVER_NET_INCLUDE_TCPCONNECTION_
 
 #include <memory>
+#include "Buffer.h"
 #include "Callbacks.h"
 #include "InetAddress.h"
 #include "noncopyable.h"
@@ -80,10 +81,10 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
     state_ = s;
   }
   
-  void handleRead();      // 处理读事件
-  void handleWrite();     // 处理写事件
-  void handleClose();     // 处理连接关闭事件
-  void handleError();     // 处理连接错误事件
+  void handleRead(Timestamp receiveTime);   // 处理读事件
+  void handleWrite();                       // 处理写事件
+  void handleClose();                       // 处理连接关闭事件
+  void handleError();                       // 处理连接错误事件
 
   // 保存事件循环对象指针
   EventLoop *loop_;
@@ -105,6 +106,7 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
   MessageCallback messageCallback_;
   // 连接关闭回调函数，这个回调是给TcpServer和TcpClient用的，用于通知它们移除所持有的TcpConnectionPtr
   CloseCallback closeCallback_;
+  Buffer inputBuffer_;    // 定义读缓冲区
 };
 
 // TcpConnection类的智能指针类型

@@ -25,7 +25,7 @@ events_(0), revents_(0), index_(-1), eventHandling_(false) {
 
 // Channel 类的析构函数，确保在处理事件时不会被析构
 Channel::~Channel() {
-  assert(!eventHandling_);
+  assert(!eventHandling_);    // 断言在事件处理期间本Channel对象不会析构
 }
 
 // 调用EventLoop::updateChannel()，后者会转而调用Poller::updateChannel()。
@@ -35,7 +35,7 @@ void Channel::update() {
 }
 
 // Channel::handleEvent()是Channel的核心，它由EventLoop::loop()调用，根据revents_的值分别调用不同的用户回调。
-void Channel::handleEvent() {
+void Channel::handleEvent(Timestamp receiveTime) {
   // 标识当前正在处理事件
   eventHandling_ = true;
 
@@ -62,7 +62,7 @@ void Channel::handleEvent() {
   // 检查POLLIN、POLLPRI、POLLRDHUP事件（可读事件）  
   if (revents_ & (POLLIN | POLLPRI | POLLRDHUP)) {
     if (readCallback_) {
-      readCallback_();
+      readCallback_(receiveTime);
     }
   }
 
