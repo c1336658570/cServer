@@ -64,12 +64,24 @@ class Channel : noncopyable {
     events_ |= kReadEvent;
     update();   // 调用update将当前这个channel加入到poller_的ChannelMap
   }
-  // void enableWriting() { events_ |= kWriteEvent; update(); }
-  // void disableWriting() { events_ &= ~kWriteEvent; update(); }
+  // 启用写事件
+  void enableWriting() { 
+    events_ |= kWriteEvent;
+    update();
+  }
+  // 禁用写事件
+  void disableWriting() {
+    events_ &= ~kWriteEvent;
+    update();
+  }
   // 禁用所有关注的事件
   void disableAll() {
     events_ = kNoneEvent;
     update();
+  }
+  // 是否启用写事件
+  bool isWriting() const {
+    return events_ & kWriteEvent;
   }
 
   // 获取在Poller中的索引

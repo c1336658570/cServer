@@ -47,6 +47,12 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
     return state_ == kConnected;
   }
 
+  // void send(const void* message, size_t len);
+  // 线程安全
+  void send(const std::string& message);    // 发消息
+  // 线程安全
+  void shutdown();                          // 半关闭（关闭写）
+
   // 设置连接建立时的回调函数
   void setConnectionCallback(const ConnectionCallback &cb) {
     connectionCallback_ = cb;
@@ -71,9 +77,10 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
  private:
   // 表示连接状态的枚举
   enum StateE {
-    kConnecting,
-    kConnected,
-    kDisconnected,
+    kConnecting,      // 初始状态
+    kConnected,       // connectEstablished()后的状态
+    kDisconnecting,   // shutdown()后的状态
+    kDisconnected,    // handleClose()后的状态
   };
 
   // 设置连接状态
@@ -81,10 +88,12 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
     state_ = s;
   }
   
-  void handleRead(Timestamp receiveTime);   // 处理读事件
-  void handleWrite();                       // 处理写事件
-  void handleClose();                       // 处理连接关闭事件
-  void handleError();                       // 处理连接错误事件
+  void handleRead(Timestamp receiveTime);         // 处理读事件
+  void handleWrite();                             // 处理写事件
+  void handleClose();                             // 处理连接关闭事件
+  void handleError();                             // 处理连接错误事件
+  void sendInLoop(const std::string& message);    // 在事件循环中发送消息。
+  void shutdownInLoop();                          // 在事件循环中半关闭套间字（关闭写）。
 
   // 保存事件循环对象指针
   EventLoop *loop_;
@@ -107,6 +116,7 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
   // 连接关闭回调函数，这个回调是给TcpServer和TcpClient用的，用于通知它们移除所持有的TcpConnectionPtr
   CloseCallback closeCallback_;
   Buffer inputBuffer_;    // 定义读缓冲区
+  Buffer outputBuffer_;   // 定义写缓冲区
 };
 
 // TcpConnection类的智能指针类型
