@@ -53,6 +53,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress &peerAddr) {
   connections_[connName] = conn;                      // 将连接对象添加到连接映射中
   conn->setConnectionCallback(connectionCallback_);   // 设置连接回调函数
   conn->setMessageCallback(messageCallback_);         // 设置消息回调函数
+  conn->setWriteCompleteCallback(writeCompleteCallback_);
   // 设置关闭时回调函数
   conn->setCloseCallback(std::bind(&TcpServer::removeConnection, this, std::placeholders::_1));
   conn->connectEstablished();                         // 调用连接建立函数，完成连接的建立

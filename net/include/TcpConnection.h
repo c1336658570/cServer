@@ -52,6 +52,7 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
   void send(const std::string& message);    // 发消息
   // 线程安全
   void shutdown();                          // 半关闭（关闭写）
+  void setTcpNoDelay(bool on);              // 用于设置TCP_NODELAY选项，启用或禁用Nagle算法
 
   // 设置连接建立时的回调函数
   void setConnectionCallback(const ConnectionCallback &cb) {
@@ -62,6 +63,11 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
   void setMessageCallback(const MessageCallback &cb) {
     messageCallback_ = cb;
   }
+
+void setWriteCompleteCallback(const WriteCompleteCallback& cb) {
+  // 设置发送缓冲区清空时调用的回调函数
+  writeCompleteCallback_ = cb;
+}
 
   // 仅供内部使用。
   // 设置连接关闭时的回调函数
@@ -113,6 +119,7 @@ class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnec
   ConnectionCallback connectionCallback_;
   // 消息到达时的回调函数
   MessageCallback messageCallback_;
+  WriteCompleteCallback writeCompleteCallback_;     // 如果发送缓冲区清空就调用它
   // 连接关闭回调函数，这个回调是给TcpServer和TcpClient用的，用于通知它们移除所持有的TcpConnectionPtr
   CloseCallback closeCallback_;
   Buffer inputBuffer_;    // 定义读缓冲区

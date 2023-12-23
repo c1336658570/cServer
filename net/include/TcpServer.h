@@ -34,6 +34,11 @@ class TcpServer : noncopyable {
     messageCallback_ = cb;
   }
 
+  // 设置写入完成回调（发送缓冲区清空的回调）。不是线程安全的
+  void setWriteCompleteCallback(const WriteCompleteCallback& cb) {
+    writeCompleteCallback_ = cb;
+  }
+
  private:
   // 处理新连接的函数，非线程安全但在事件循环中调用
   void newConnection(int sockfd, const InetAddress& peerAddr);
@@ -43,14 +48,15 @@ class TcpServer : noncopyable {
   // 定义一个连接映射，用于存储已建立连接的TcpConnection对象
   typedef std::map<std::string, TcpConnectionPtr> ConnectionMap;
 
-  EventLoop *loop_;                         // TcpServer所属的事件循环
-  const std::string name_;                  // 服务器的名称
-  std::unique_ptr<Acceptor> acceptor_;      // 避免直接暴露Acceptor对象，使用Acceptor来获得新连接的fd。
-  ConnectionCallback connectionCallback_;   // 连接回调函数
-  MessageCallback messageCallback_;         // 消息回调函数
-  bool started_;                            // 服务器是否已启动标志
-  int nextConnId_;                          // 下一个连接的ID，始终在事件循环线程中访问
-  ConnectionMap connections_;               // 存储已建立连接的映射
+  EventLoop *loop_;                               // TcpServer所属的事件循环
+  const std::string name_;                        // 服务器的名称
+  std::unique_ptr<Acceptor> acceptor_;            // 避免直接暴露Acceptor对象，使用Acceptor来获得新连接的fd。
+  ConnectionCallback connectionCallback_;         // 连接回调函数
+  MessageCallback messageCallback_;               // 消息回调函数
+  WriteCompleteCallback writeCompleteCallback_;   // 写入完成回调（发送缓冲区清空的回调）
+  bool started_;                                  // 服务器是否已启动标志
+  int nextConnId_;                                // 下一个连接的ID，始终在事件循环线程中访问
+  ConnectionMap connections_;                     // 存储已建立连接的映射
 };
 
 } // namespace cServer

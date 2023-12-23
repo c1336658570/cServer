@@ -70,8 +70,12 @@ void TcpConnection::sendInLoop(const std::string &message) {
     if (nwrote >= 0) {
       if (static_cast<size_t>(nwrote) < message.size()) {
         LOG_TRACE << "I am going to write more data";
+      } else if (writeCompleteCallback_) {
+        // 一次性发送完了所有数据，调用writeCompleteCallback_，writeCompleteCallback_是发送缓冲区清空的回调函数
+        loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
       }
     } else {
+      // 如果当前outputBuffer_已经有待发送的数据，那么就不能先尝试发送了，因为这会造成数据乱序。
       nwrote = 0;
       if (errno != EWOULDBLOCK) {
         LOG_SYSERR << "TcpConnection::sendInLoop";
@@ -108,6 +112,11 @@ void TcpConnection::shutdownInLoop() {
   }
 }
 
+// 用于设置TCP_NODELAY选项，启用或禁用Nagle算法
+void TcpConnection::setTcpNoDelay(bool on) {
+  socket_->setTcpNoDelay(on);
+}
+
 // 连接建立时调用，用于完成连接的建立
 void TcpConnection::connectEstablished()
 {
@@ -122,7 +131,7 @@ void TcpConnection::connectEstablished()
 // 处理连接销毁事件，connectDestroyed()是TcpConnection析构前最后调用的一个成员函数，它通知用户连接已断开。
 void TcpConnection::connectDestroyed() {
   loop_->assertInLoopThread();
-  assert(state_ == kConnected || state_ == kDisconnecting);
+  assert(state_ == kConnected || state_ == kDisconnecting);   // 检查是否是正常连接状态或半关闭状态
   setState(kDisconnected);
   // 此处的disableAll和handleClose的disableALL是重复的，因为有时候connectDestroyed不经由handleclose调用，而是直接调用connectDestroyed()
   channel_->disableAll();     // 禁用 Channel 的所有事件关注
@@ -161,6 +170,10 @@ void TcpConnection::handleWrite() {
       if (outputBuffer_.readableBytes() == 0) {
         // 如果输出缓冲区已经为空，则禁用写事件，如果处在断开连接状态下则执行关闭逻辑
         channel_->disableWriting();
+        if (writeCompleteCallback_) {
+          // 发送缓冲区已经为空了，调用发送缓冲区清空的回调函数
+          loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
+        }
         if (state_ == kDisconnecting) {
           shutdownInLoop();
         }

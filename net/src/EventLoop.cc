@@ -2,6 +2,7 @@
 #include <poll.h>
 #include <sys/eventfd.h>
 #include <functional>
+#include <signal.h>
 #include "EventLoop.h"
 #include "Logging.h"
 #include "Poller.h"
@@ -32,6 +33,16 @@ static int createEventfd()
   // 返回创建的eventfd文件描述符。
   return evtfd;
 }
+
+// 屏蔽SIGPIPE信号，避免断开连接，服务器发送数据，导致服务器挂
+class IgnoreSigPipe {
+ public:
+  IgnoreSigPipe() {
+  ::signal(SIGPIPE, SIG_IGN);
+  }
+};
+
+IgnoreSigPipe initObj;
 
 EventLoop::EventLoop()
   : looping_(false),                    // 初始化loop_为未开始
