@@ -22,7 +22,7 @@ class InetAddress {
   std::string toHostPort() const;   
 
   // 获取sockaddr_in结构体，返回网络地址的信息。
-  const struct sockaddr_in& getSockAddrInet() const {
+  const struct sockaddr_in &getSockAddrInet() const {
     return addr_;
   }
 
@@ -36,6 +36,8 @@ class InetAddress {
 };
 
 struct sockaddr_in getLocalAddr(int sockfd);
+// 判断是否是自连接
+bool isSelfConnect(int sockfd);
 
 } // namespcae cServer
 

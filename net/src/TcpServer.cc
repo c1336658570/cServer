@@ -69,7 +69,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress &peerAddr) {
 
 // 从TcpServer的连接映射中移除指定的TcpConnection对象
  void TcpServer::removeConnection(const TcpConnectionPtr &conn) {
-  // 在TcpConnection自己所属的io EventLoop中会调用handleClose，在handleClose中会调用closeCallback_
+  // TcpConnection在自己所属的io EventLoop中会调用handleClose，在handleClose中会调用closeCallback_
   // 而closeCallback_就是removeConnection，我们需要把移除connection移动到loop_(即baseLoop_)中
   loop_->runInLoop(std::bind(&TcpServer::removeConnectionInLoop, this, conn));
 }

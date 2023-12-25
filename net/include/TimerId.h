@@ -9,14 +9,18 @@ class Timer;
 // TimerId类，用于表示定时器的不透明标识符，用于取消定时器
 class TimerId {
  public:
-  // 显式构造函数，接受一个Timer指针作为参数，用于创建TimerId对象
-  explicit TimerId(Timer *timer) : value_(timer) {
+  TimerId(Timer* timer = NULL, int64_t seq = 0) : timer_(timer), seq_(seq) {
   }
 
+  // 默认的拷贝构造函数、析构函数和赋值运算符是可以的
+
+  friend class TimerQueue;
+
  private:
-  Timer *value_;
+  Timer* timer_;    // 定时器
+  int64_t seq_;     // 序列号
 };
 
-} // namespace cServer
+}  // namespace cServer
 
 #endif  // CSERVER_NET_INCLUDE_TIMERID_

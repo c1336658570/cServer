@@ -6,18 +6,6 @@
 
 namespace cServer {
 
-int getSocketError(int sockfd) {
-  int optval;
-  socklen_t optlen = sizeof(optval);
-
-  if (::getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &optval, &optlen) < 0) {
-    return errno;
-  }
-  else {
-    return optval;
-  }
-}
-
 // TcpConnection构造函数，用于初始化TcpConnection对象
 TcpConnection::TcpConnection(EventLoop *loop, const std::string &nameArg, int sockfd,
                              const InetAddress &localAddr, const InetAddress &peerAddr) :

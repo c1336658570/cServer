@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <cassert>
 #include <functional>
+#include <algorithm>
 #include "TimerQueue.h"
 #include "Logging.h"
 #include "Timer.h"
@@ -84,7 +85,8 @@ TimerQueue::TimerQueue(EventLoop *loop) :
       loop_(loop),                          // 设置当前TimerQueue所属的EventLoop
       timerfd_(createTimerfd()),            // 创建timerfd文件描述符
       timerfdChannel_(loop, timerfd_),      // 创建与timerfd相关联的Channel
-      timers_() {
+      timers_(),                            // 按到期时间排序的定时器列表
+      callingExpiredTimers_(false) {
   // 设置timerfdChannel的读回调函数为TimerQueue::handleRead()
   timerfdChannel_.setReadCallback(std::bind(&TimerQueue::handleRead, this));
   // 始终监听timerfd文件描述符的可读事件，通过timerfd_settime()来停止定时器
@@ -104,32 +106,57 @@ TimerQueue::~TimerQueue() {
 // - when: 定时器的到期时间戳
 // - interval: 定时器的重复间隔时间
 TimerId TimerQueue::addTimer(const TimerCallback &cb,
-                             Timestamp when,
-                             double interval)
-{
+                             Timestamp when, double interval) {
   // 创建一个新的定时器对象
   Timer *timer = new Timer(cb, when, interval);
   // 异步地将定时器对象加入事件循环中
-  loop_->runInLoop(
-      std::bind(&TimerQueue::addTimerInLoop, this, timer));
+  loop_->runInLoop(std::bind(&TimerQueue::addTimerInLoop, this, timer));
   // 返回定时器的唯一标识 TimerId
-  return TimerId(timer);
+  return TimerId(timer, timer->sequence());
+}
+
+// 取消定时器
+void TimerQueue::cancel(TimerId timerId) {
+  loop_->runInLoop(std::bind(&TimerQueue::cancelInLoop, this, timerId));
 }
 
 // 在事件循环中添加定时器的函数，确保在事件循环所在的IO线程中执行。
 // - timer: 要添加的定时器对象指针
-void TimerQueue::addTimerInLoop(Timer *timer)
-{
+void TimerQueue::addTimerInLoop(Timer *timer) {
   // 断言当前线程是事件循环所在的IO线程
   loop_->assertInLoopThread();
   // 将定时器插入到定时器队列中，并记录是否导致最早到期时间的改变
   bool earliestChanged = insert(timer);
 
   // 如果最早到期时间发生了改变，重置定时器文件描述符的超时时间
-  if (earliestChanged)
-  {
+  if (earliestChanged) {
     resetTimerfd(timerfd_, timer->expiration());
   }
+}
+
+// 在事件循环中取消定时器
+void TimerQueue::cancelInLoop(TimerId timerId) {
+  loop_->assertInLoopThread();    // 确保在事件循环线程中调用该函数
+  // 确保定时器列表和活跃定时器集合大小相同
+  assert(timers_.size() == activeTimers_.size());
+  // 构造 ActiveTimer 对象，表示要取消的定时器
+  ActiveTimer timer(timerId.timer_, timerId.seq_);
+  // 在活跃定时器集合中查找要取消的定时器
+  ActiveTimerSet::iterator it = activeTimers_.find(timer);
+  // 如果找到了要取消的定时器
+  if (it != activeTimers_.end()) {
+    // 从定时器列表中移除该定时器
+    size_t n = timers_.erase(Entry(it->first->expiration(), it->first));
+    assert(n == 1); (void)n;    // 确保只移除了一个定时器
+    delete it->first;
+    activeTimers_.erase(it);    // 从活跃定时器集合中移除
+  }
+  // cancelingTimers_和callingExpiredTimers_是为了应对“自注销”这种情况，即在定时器回调中注销当前定时器
+  // 如果定时器正在被调用（即处于执行回调的过程中），则将要取消的定时器插入 cancelingTimers_ 集合中
+  else if (callingExpiredTimers_) {
+    cancelingTimers_.insert(timer);
+  }
+  assert(timers_.size() == activeTimers_.size());   // 确保定时器列表和活跃定时器集合大小相同
 }
 
 // 处理timerfd文件描述符可读事件的回调函数
@@ -141,11 +168,16 @@ void TimerQueue::handleRead() {
   // 获取已过期的定时器列表
   std::vector<Entry> expired = getExpired(now);
 
+  callingExpiredTimers_ = true;   // 表示正在执行定时器回调
+  cancelingTimers_.clear();       // 清空cancelingTimers_
+
   // safe to callback outside critical section
   // 在安全的情况下执行已过期定时器的回调函数
   for (std::vector<Entry>::iterator it = expired.begin(); it != expired.end(); ++it) {
     it->second->run();
   }
+
+  callingExpiredTimers_ = false;  // 退出定时器回调
 
   // 如果是重复定时器，重新设置定时器列表中剩余定时器的到期时间
   reset(expired, now);
@@ -153,6 +185,7 @@ void TimerQueue::handleRead() {
 
 // 函数会从timers_中移除已到期的Timer，并通过vector返回它们。
 std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now) {
+  assert(timers_.size() == activeTimers_.size());
   std::vector<Entry> expired;  // 创建一个用于存储已过期定时器的vector
   // 创建一个临时的定时器条目（sentry），其到期时间为当前时间，用于辅助
   // lower_bound 查找
@@ -171,6 +204,15 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now) {
   // 从 timers_ 中移除已过期的定时器
   timers_.erase(timers_.begin(), it);
 
+  // 从activeTimerSet_中删除
+  for (std::vector<Entry>::const_iterator it_ = expired.begin();
+       it_ != expired.end(); ++it_) {
+    ActiveTimer timer(it_->second, it_->second->sequence());
+    size_t n = activeTimers_.erase(timer);
+  }
+
+  assert(timers_.size() == activeTimers_.size());
+
   return expired;  // 返回包含已过期定时器的vector
 }
 
@@ -180,8 +222,9 @@ void TimerQueue::reset(const std::vector<Entry> &expired, Timestamp now) {
 
   // 遍历已过期的定时器列表
   for (std::vector<Entry>::const_iterator it = expired.begin(); it != expired.end(); ++it) {
-    if (it->second->repeat()) {
-      // 如果是重复触发的定时器，重新启动并插入到TimerList中
+    ActiveTimer timer(it->second, it->second->sequence());
+    if (it->second->repeat() && cancelingTimers_.find(timer) == cancelingTimers_.end()) {
+      // 如果是重复触发的定时器，重新启动并插入到TimerList中，要判断定时器是否已经取消
       it->second->restart(now);
       insert(it->second);
     } else {
@@ -203,6 +246,8 @@ void TimerQueue::reset(const std::vector<Entry> &expired, Timestamp now) {
 
 // 向TimerList中插入定时器，并返回是否是最早到期的标志
 bool TimerQueue::insert(Timer *timer) {
+  loop_->assertInLoopThread();
+  assert(timers_.size() == activeTimers_.size());
   bool earliestChanged = false;
   Timestamp when = timer->expiration();
   TimerList::iterator it = timers_.begin();
@@ -210,9 +255,20 @@ bool TimerQueue::insert(Timer *timer) {
   if (it == timers_.end() || when < it->first) {
     earliestChanged = true;
   }
-  // 将新的定时器插入TimerList中
-  std::pair<TimerList::iterator, bool> result = timers_.insert(std::make_pair(when, timer));
-  assert(result.second);      // 检查插入是否成功
+  {
+    // 将新的定时器插入TimerList中
+    std::pair<TimerList::iterator, bool> result = timers_.insert(std::make_pair(when, timer));
+    // std::pair<TimerList::iterator, bool> result = timers_.insert(Entry(when, timer));
+    assert(result.second); (void)result;    // 检查插入是否成功
+  }
+  {
+    // 将新定时器插入到ActiveTimerSet中
+    std::pair<ActiveTimerSet::iterator, bool> result
+      = activeTimers_.insert(ActiveTimer(timer, timer->sequence()));
+    assert(result.second); (void)result;
+  }
+
+  assert(timers_.size() == activeTimers_.size());
   return earliestChanged;
 }
 

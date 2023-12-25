@@ -161,6 +161,11 @@ TimerId EventLoop::runEvery(double interval, const TimerCallback &cb) {
   return timerQueue_->addTimer(cb, time, interval);
 }
 
+// 取消一个定时器
+void EventLoop::cancel(TimerId timerId) {
+  return timerQueue_->cancel(timerId);
+}
+
 void EventLoop::updateChannel(Channel *channel) {
   assert(channel->ownerLoop() == this);
   assertInLoopThread();

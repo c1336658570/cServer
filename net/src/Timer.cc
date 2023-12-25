@@ -2,6 +2,8 @@
 
 namespace cServer {
 
+std::atomic_int64_t Timer::s_numCreated_;
+
 void Timer::restart(Timestamp now) {
   if (repeat_) {
     // 如果定时器是重复定时器，则更新到期时间为当前时间加上重复间隔

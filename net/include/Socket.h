@@ -8,6 +8,8 @@ namespace cServer {
 
 // 创建一个非阻塞套接字
 int createNonblocking();
+// 获取套接字的相关错误状态
+int getSocketError(int sockfd);
 
 class Socket : noncopyable {
  public:

@@ -16,6 +16,17 @@ int createNonblocking() {
   return sockfd;
 }
 
+// 获取套接字的相关错误状态
+int getSocketError(int sockfd) {
+  int optval;
+  socklen_t optlen = sizeof(optval);
+
+  if (::getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &optval, &optlen) < 0) {
+    return errno;
+  } else {
+    return optval;
+  }
+}
 
 // Socket对象的析构函数，用于关闭套接字。
 Socket::~Socket() {

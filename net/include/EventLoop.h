@@ -48,8 +48,8 @@ class EventLoop : noncopyable {
   TimerId runAfter(double delay, const TimerCallback &cb);
   // 每隔'interval'秒执行一次回调函数'cb'。在其他线程调用是线程安全的
   TimerId runEvery(double interval, const TimerCallback &cb);
-
-  // void cancel(TimerId timerId);
+  // 取消一个定时器
+  void cancel(TimerId timerId);
 
   void wakeup();    // 唤醒
 

@@ -9,8 +9,6 @@
 
 namespace cServer {
 
-int getSocketError(int sockfd);
-
 class Channel;
 class EventLoop;
 class Socket;
