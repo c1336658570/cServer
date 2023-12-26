@@ -99,7 +99,6 @@ void AsyncLogging::threadFunc() {
 
     for (const auto &buffer : buffersToWrite) {
       // 将待写入文件的缓冲区内容追加到日志文件
-      // FIXME: use unbuffered stdio FILE ? or use ::writev ?
       output.append(buffer->data(), buffer->length());
     }
 

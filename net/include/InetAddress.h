@@ -36,6 +36,7 @@ class InetAddress {
 };
 
 struct sockaddr_in getLocalAddr(int sockfd);
+struct sockaddr_in getPeerAddr(int sockfd);
 // 判断是否是自连接
 bool isSelfConnect(int sockfd);
 

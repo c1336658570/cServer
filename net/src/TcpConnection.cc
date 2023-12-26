@@ -84,7 +84,6 @@ void TcpConnection::sendInLoop(const std::string &message) {
 // 半关闭。关闭写。如果连接处于已连接状态（kConnected），则将连接状态置为断开中（kDisconnecting），
 // 并通过事件循环线程执行关闭逻辑。
 void TcpConnection::shutdown() {
-  // FIXME: use compare and swap
   if (state_ == kConnected) {
     setState(kDisconnecting);
     loop_->runInLoop(std::bind(&TcpConnection::shutdownInLoop, this));
