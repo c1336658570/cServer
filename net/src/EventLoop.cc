@@ -5,7 +5,7 @@
 #include <signal.h>
 #include "EventLoop.h"
 #include "Logging.h"
-#include "Poller.h"
+#include "EPoller.h"
 #include "Channel.h"
 #include "TimerQueue.h"
 
@@ -49,7 +49,7 @@ EventLoop::EventLoop()
     quit_(false),                       // 初始化退出状态为未退出
     callingPendingFunctors_(false),     // 初始化回调函数处理状态为未处理
     threadId_(CurrentThread::tid()),    // 获取当前线程的线程ID
-    poller_(new Poller(this)),          // 创建一个用于轮询事件的Poller对象
+    poller_(new EPoller(this)),          // 创建一个用于轮询事件的Poller对象
     timerQueue_(new TimerQueue(this)),  // 创建一个定时器队列TimerQueue对象
     wakeupFd_(createEventfd()),         // 创建一个用于唤醒事件循环的eventfd文件描述符
     wakeupChannel_(new Channel(this, wakeupFd_)) { // 创建一个Channel对象用于处理eventfd的可读事件

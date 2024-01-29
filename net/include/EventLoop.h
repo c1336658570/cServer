@@ -14,7 +14,7 @@
 namespace cServer {
 
 class Channel;
-class Poller;
+class EPoller;
 class TimerQueue;
 
 // EventLoop是不可拷贝的，每个线程只能有一个EventLoop对象
@@ -85,7 +85,7 @@ class EventLoop : noncopyable {
   bool callingPendingFunctors_;     // 是否正在调用等待中的回调函数
   const pid_t threadId_;            // 当前EventLoop所属的IO线程的线程ID
   Timestamp pollReturnTime_;        // poll返回的时间戳
-  std::unique_ptr<Poller> poller_;  // Poller对象，用于事件的轮询
+  std::unique_ptr<EPoller> poller_;  // Poller对象，用于事件的轮询
   std::unique_ptr<TimerQueue> timerQueue_;    // 定时事件队列
   int wakeupFd_;                              // 用于唤醒的文件描述符
   // 与TimerQueue不同，该类不会将Channel暴露给客户端。
