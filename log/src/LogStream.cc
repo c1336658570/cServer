@@ -1,3 +1,4 @@
+// 此文件实现日志的缓冲区（LogStream）
 #include "LogStream.h"
 #include <algorithm>
 #include <limits>
@@ -55,6 +56,7 @@ const char *FixedBuffer<SIZE>::debugString() {
   return data_;
 }
 
+// 负责将整数转为字符串并写入buffer_中
 template <typename T>
 void LogStream::formatInteger(T v) {
   if (buffer_.avail() >= kMaxNumericSize) {
@@ -110,9 +112,10 @@ LogStream &LogStream::operator<<(unsigned long long v) {
 
 LogStream &LogStream::operator<<(const void *p) 
 {
-  auto v = reinterpret_cast<uintptr_t>(p);    // 将指针 p 转换为无符号整数
+  auto v = reinterpret_cast<uintptr_t>(p);    // 将指针 p 转换为unsigned long
   if(buffer_.avail() >= kMaxNumericSize){     // 检查缓冲区是否有足够空间
     char *buf = buffer_.current();
+    // 将指针p保存的地址写入buffer_中
     buf[0] = '0';
     buf[1] = 'x';
     size_t len = converHex(buf + 2, v);       // 调用 converHex 函数将 uintptr_t 转换为十六进制字符串
@@ -175,6 +178,7 @@ LogStream &LogStream::operator<<(const Buffer &v)
 
 } // namespace cServer
 
+// 构造函数，接受格式字符串和值，用于格式化输出
 template<typename T>
 cServer::Fmt::Fmt(const char *fmt, T val) {
   // 使用 snprintf 将格式化后的字符串写入 buf_ 中，并获取字符串的长度

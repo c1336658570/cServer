@@ -1,3 +1,4 @@
+// 此文件实现异步日志库
 #include <functional>
 #include "AsyncLogging.h"
 #include "LogFile.h"
@@ -5,20 +6,20 @@
 
 namespace cServer {
 AsyncLogging::AsyncLogging(const string &basename, off_t rollSize, int flushInterval)
-    : flushInterval_(flushInterval),
-      running_(false),
-      basename_(basename),
-      rollSize_(rollSize),
-      thread_(std::bind(&AsyncLogging::threadFunc, this)),
-      latch_(1),
-      mutex_(),
-      cond_(mutex_),
-      currentBuffer_(new Buffer),
-      nextBuffer_(new Buffer),
-      buffers_() {
-  currentBuffer_->bzero();  // 清空
-  nextBuffer_->bzero();     // 清空
-  buffers_.reserve(16);
+    : flushInterval_(flushInterval),    // 初始化刷新间隔时间
+      running_(false),                  // 初始化运行状态为false，即未启动
+      basename_(basename),              // 初始化日志文件的基本名称
+      rollSize_(rollSize),              // 初始化日志文件的滚动大小，超过此大小时进行滚动
+      thread_(std::bind(&AsyncLogging::threadFunc, this)),  // 初始化后台线程，并将线程函数绑定到当前对象的threadFunc方法
+      latch_(1),                        // 初始化CountDownLatch为1，用于等待线程启动
+      mutex_(),                         // 初始化互斥锁
+      cond_(mutex_),                    // 使用互斥锁初始化条件变量
+      currentBuffer_(new Buffer),       // 创建一个新的Buffer对象作为当前缓冲区
+      nextBuffer_(new Buffer),          // 创建一个新的Buffer对象作为下一个缓冲区
+      buffers_() {                      // 默认初始化缓冲区列表
+  currentBuffer_->bzero();    // 清空当前缓冲区，bzero函数用于将内存（字节）设置为零
+  nextBuffer_->bzero();       // 清空下一个缓冲区，同样使用bzero清零
+  buffers_.reserve(16);       // 提前分配缓冲区列表的空间为16，以减少动态分配内存的开销和次数
 }
 
 // 前端在生成一条日志消息的时候会调用AsyncLogging::append()。
@@ -67,11 +68,11 @@ void AsyncLogging::threadFunc() {
 
     {
       cServer::MutexLockGuard lock(mutex_);  // 临界区
-      if (buffers_.empty())  // unusual usage!  异常情况：缓冲区为空
+      // buffers_如果不为空就直接将前端缓冲加入到后端
+      if (buffers_.empty())  // 异常情况：缓冲区为空
       {
         // 在临界区内，等待条件触发，条件有两个：其一是超时，其二是前端写满了一个或多个buffer。
-        // 这里是非常规的condition
-        // variable用法，它没有使用while循环，而且等待时间有上限。
+        // 这里是非常规的condition variable用法，它没有使用while循环，而且等待时间有上限。
         cond_.waitForSeconds(flushInterval_);  // 等待一段时间，等待有新的日志消息到达
       }
       buffers_.push_back(std::move(currentBuffer_));  // 将当前缓冲（currentBuffer_）移入buffers_
@@ -94,6 +95,7 @@ void AsyncLogging::threadFunc() {
           Timestamp::now().toFormatString().c_str(), buffersToWrite.size() - 2);
       fputs(buf, stderr);
       output.append(buf, static_cast<int>(strlen(buf)));
+      // 丢掉除前两个buffer外的其他所有buffer
       buffersToWrite.erase(buffersToWrite.begin() + 2, buffersToWrite.end());
     }
 
@@ -128,4 +130,5 @@ void AsyncLogging::threadFunc() {
   }
   output.flush();  // 在线程结束前，再次刷新日志文件，确保所有日志都被写入磁盘
 }
+
 }  // namespace cServer

@@ -1,3 +1,4 @@
+// 此文件实现日志库的前端接口，即网络库可以直接使用LOG_TRACE等宏，用法如下LOG_TRACE << "hello" << std::endl;
 #include "Logging.h"
 #include "Timestamp.h"
 #include "CurrentThread.h"
@@ -80,7 +81,7 @@ Logger::Impl::Impl(LogLevel level, int old_errno, const SourceFile &file, int li
     level_(level),              // 设置日志级别
     line_(line),                // 设置源代码行号
     basename_(file) {           // 设置源文件名
-  formatTime();                 // 格式化时间戳
+  formatTime();                 // 格式化时间戳为字符串，并将其附加到日志流中
   CurrentThread::tid();         // 获取当前线程ID
   stream_.append(CurrentThread::tidString(), CurrentThread::t_tidLen);  // 写入线程ID
   stream_.append(LogLevelName[level], 6);   // 写入日志级别

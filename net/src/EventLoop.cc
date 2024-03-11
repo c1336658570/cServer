@@ -59,7 +59,7 @@ EventLoop::EventLoop()
   if (t_loopInThisThread) {
     LOG_FATAL << "Another EventLoop " << t_loopInThisThread << " exits in this thread" << threadId_;
   } else {
-    t_loopInThisThread = this;    // 记住本对象所属的线程（threadId_）。
+    t_loopInThisThread = this;    // 记住本对象所属的线程
   }
   // 设置wakeupChannel的读回调函数为EventLoop::handleRead()。
   wakeupChannel_->setReadCallback(std::bind(&EventLoop::handleRead, this));

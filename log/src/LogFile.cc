@@ -1,3 +1,4 @@
+// 此文件实现将日志内容写入文件中
 #include <cassert>
 #include "LogFile.h"
 
@@ -6,17 +7,17 @@ namespace cServer {
 // 构造函数，初始化 LogFile 对象
 LogFile::LogFile(const std::string &basename, off_t rollSize, bool threadSafe,
     int flushInterval, int checkEveryN) :
-    basename_(basename),
-    rollSize_(rollSize),
-    flushInterval_(flushInterval),
-    checkEveryN_(checkEveryN),
-    count_(0),
-    mutex_(threadSafe ? new MutexLock : NULL),
-    startOfPeriod_(0),
-    lastRoll_(0),
-    lastFlush_(0) {
-  assert(basename.find('/') == std::string::npos);
-  rollFile();
+    basename_(basename),  // 初始化基本名称
+    rollSize_(rollSize),  // 初始化滚动大小
+    flushInterval_(flushInterval),    // 初始化刷新间隔
+    checkEveryN_(checkEveryN),        // 初始化检查频率
+    count_(0),                        // 初始化计数器为0
+    mutex_(threadSafe ? new MutexLock : NULL),  // 根据是否线程安全选择是否创建互斥锁
+    startOfPeriod_(0),                          // 初始化周期开始时间为0
+    lastRoll_(0),                               // 初始化上一次滚动时间为0
+    lastFlush_(0) {                             // 初始化上一次刷新时间为0
+  assert(basename.find('/') == std::string::npos);  // 断言基本名称中不包含'/'
+  rollFile();   // 执行一次滚动操作，以创建初始日志文件
 }
 
 // 析构，默认实现
@@ -24,21 +25,22 @@ LogFile::~LogFile() = default;
 
 // 在加锁或者不加锁的情况下追加日志内容到文件
 void LogFile::append(const char *logline, int len) {
-  if (mutex_) {
+  if (mutex_) {   // 如果存在互斥锁对象
     MutexLockGuard lock(*mutex_);
     append_unlocked(logline, len);
   } else {
+    // 没有互斥锁直接追加
     append_unlocked(logline, len);
   }
 }
 
 // 在加锁或者不加锁的情况下刷新文件流
 void LogFile::flush() {
-  if (mutex_) {
+  if (mutex_) {       // 如果存在互斥锁对象
     MutexLockGuard lock(*mutex_);
     file_->flush();
   } else {
-    file_->flush();
+    file_->flush();   // 没有互斥锁直接刷新
   }
 }
 

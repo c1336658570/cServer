@@ -1,3 +1,4 @@
+// 此文件实现日志的缓冲区（LogStream）
 #ifndef CSERVER_LOG_INCLUDE_LOGSTREAM_
 #define CSERVER_LOG_INCLUDE_LOGSTREAM_
 
@@ -129,11 +130,11 @@ class LogStream : noncopyable {
 
  private:
   template<typename T>
-  void formatInteger(T);
+  void formatInteger(T);  // 负责将整数转为字符串并写入buffer_中
 
-  Buffer buffer_;
+  Buffer buffer_;   // 缓冲区，存数据
 
-  static const int kMaxNumericSize = 48;
+  static const int kMaxNumericSize = 48;  // 整数或浮点数的10进制形式最多存48位。
 };
 
 class Fmt {

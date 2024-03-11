@@ -1,3 +1,4 @@
+// 此文件实现日志库的前端接口，即网络库可以直接使用LOG_TRACE等宏，用法如下LOG_TRACE << "hello" << std::endl;
 #ifndef CSERVER_LOG_INCLUDE_LOGGING_
 #define CSERVER_LOG_INCLUDE_LOGGING_
 
@@ -82,7 +83,7 @@ class Logger {
     typedef Logger::LogLevel LogLevel;
     // 构造函数，接受日志等级、错误号、源文件、行号
     Impl(LogLevel level, int old_errno, const SourceFile &file, int line);
-    // 格式化时间
+    // 格式化时间戳为字符串，并将其附加到日志流中
     void formatTime();
     void finish();            // 一条日志的结束
 
